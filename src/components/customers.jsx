@@ -176,13 +176,32 @@ function CustomerDetail({ id, setRoute, goBack, canGoBack }) {
           <h1 className="detail-title">{displayName}</h1>
           <div className="detail-code" style={{ marginTop: 6 }}>{c.id}{c.name && c.name !== displayName && ` · ${c.name}`}</div>
         </div>
-        <div className="row" style={{ gap: 8 }}>
+        <div className="detail-kpi-grid">
+          <div className="rail-stat">
+            <div className="stat-label">ยอดซื้อตลอดอายุ · LTV</div>
+            <div className="stat-value">{lifetime ? M.thb(lifetime) : "—"}</div>
+            <div className="dim" style={{ fontSize: 11, marginTop: 4 }}>{orders.length} ออเดอร์</div>
+          </div>
+          <div className="rail-stat">
+            <div className="stat-label">ค่าเฉลี่ย/ออเดอร์</div>
+            <div className="stat-value">{avg ? M.thb(avg) : "—"}</div>
+            <div className="dim" style={{ fontSize: 11, marginTop: 4 }}>{totalQty ? `รวม ${M.num(totalQty)} หน่วย` : "—"}</div>
+          </div>
+          <div className="rail-stat">
+            <div className="stat-label">สั่งล่าสุด</div>
+            <div className="stat-value" style={{ fontSize: 14 }}>{lastDate ? M.fmtDate(lastDate) : "—"}</div>
+            <div className="dim" style={{ fontSize: 11, marginTop: 4 }}>{daysAgo != null ? `${daysAgo} วันที่แล้ว` : "ยังไม่มีออเดอร์"}</div>
+          </div>
+          <div className="rail-stat">
+            <div className="stat-label">SKUs ที่ซื้อ</div>
+            <div className="stat-value">{skuList.length}<span style={{ fontSize: 12, fontWeight: 400, marginLeft: 4, color: "var(--text-2)" }}>รายการ</span></div>
+            <div className="dim" style={{ fontSize: 11, marginTop: 4 }}>{firstDate ? `เริ่ม ${M.fmtDate(firstDate)}` : "—"}</div>
+          </div>
         </div>
       </div>
 
-      <div className="page-with-rail">
-        <div className="page-main">
-          <div className="tabs">
+      <div>
+        <div className="tabs">
             <div className={"tab " + (tab === "info" ? "active" : "")} onClick={() => setTab("info")}>ข้อมูลลูกค้า</div>
             <div className={"tab " + (tab === "orders" ? "active" : "")} onClick={() => setTab("orders")}>ออเดอร์ ({orders.length})</div>
             <div className={"tab " + (tab === "skus" ? "active" : "")} onClick={() => setTab("skus")}>สินค้าที่ซื้อ ({skuList.length})</div>
@@ -268,51 +287,27 @@ function CustomerDetail({ id, setRoute, goBack, canGoBack }) {
               </div>
             </div>
           )}
-        </div>
 
-        <aside className="page-rail">
-          <div className="rail-stat">
-            <div className="stat-label">ยอดซื้อตลอดอายุ · LTV</div>
-            <div className="stat-value">{lifetime ? M.thb(lifetime) : "—"}</div>
-            <div className="dim" style={{ fontSize: 11, marginTop: 4 }}>{orders.length} ออเดอร์</div>
-          </div>
-          <div className="rail-stat">
-            <div className="stat-label">ค่าเฉลี่ย/ออเดอร์</div>
-            <div className="stat-value">{avg ? M.thb(avg) : "—"}</div>
-            <div className="dim" style={{ fontSize: 11, marginTop: 4 }}>{totalQty ? `รวม ${M.num(totalQty)} หน่วย` : "—"}</div>
-          </div>
-          <div className="rail-stat">
-            <div className="stat-label">สั่งล่าสุด</div>
-            <div className="stat-value" style={{ fontSize: 14 }}>{lastDate ? M.fmtDate(lastDate) : "—"}</div>
-            <div className="dim" style={{ fontSize: 11, marginTop: 4 }}>{daysAgo != null ? `${daysAgo} วันที่แล้ว` : "ยังไม่มีออเดอร์"}</div>
-          </div>
-          <div className="rail-stat">
-            <div className="stat-label">SKUs ที่ซื้อ</div>
-            <div className="stat-value">{skuList.length}<span style={{ fontSize: 12, fontWeight: 400, marginLeft: 4, color: "var(--text-2)" }}>รายการ</span></div>
-            <div className="dim" style={{ fontSize: 11, marginTop: 4 }}>{firstDate ? `เริ่ม ${M.fmtDate(firstDate)}` : "—"}</div>
-          </div>
-
-          {skuList.length > 0 && (
-            <div className="card">
-              <div className="card-head">
-                <h3>สินค้าที่ซื้อบ่อย</h3>
-                <span className="more" style={{ cursor: "pointer" }} onClick={() => setTab("skus")}>ดูทั้งหมด</span>
-              </div>
-              <div style={{ padding: "4px 0" }}>
-                {skuList.slice(0, 4).map((s, i) => {
-                  const p = M.productOf(s.sku)
-                  return (
-                    <div key={s.sku} style={{ padding: "10px 14px", borderBottom: i < Math.min(skuList.length - 1, 3) ? "1px solid var(--border)" : "none", cursor: "pointer" }} onClick={() => setRoute("products:" + s.sku)}>
-                      <div style={{ fontSize: 12.5, fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p?.name || s.sku}</div>
-                      <div className="dim mono" style={{ fontSize: 10.5, marginTop: 2 }}>{s.sku}</div>
-                      <div className="dim" style={{ fontSize: 11, marginTop: 1 }}>{s.count} ครั้ง · {M.thb(s.revenue)}</div>
-                    </div>
-                  )
-                })}
-              </div>
+        {skuList.length > 0 && (
+          <div className="card" style={{ marginTop: 16 }}>
+            <div className="card-head">
+              <h3>สินค้าที่ซื้อบ่อย</h3>
+              <span className="more" style={{ cursor: "pointer" }} onClick={() => setTab("skus")}>ดูทั้งหมด</span>
             </div>
-          )}
-        </aside>
+            <div style={{ padding: "4px 0" }}>
+              {skuList.slice(0, 4).map((s, i) => {
+                const p = M.productOf(s.sku)
+                return (
+                  <div key={s.sku} style={{ padding: "10px 14px", borderBottom: i < Math.min(skuList.length - 1, 3) ? "1px solid var(--border)" : "none", cursor: "pointer" }} onClick={() => setRoute("products:" + s.sku)}>
+                    <div style={{ fontSize: 12.5, fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p?.name || s.sku}</div>
+                    <div className="dim mono" style={{ fontSize: 10.5, marginTop: 2 }}>{s.sku}</div>
+                    <div className="dim" style={{ fontSize: 11, marginTop: 1 }}>{s.count} ครั้ง · {M.thb(s.revenue)}</div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
       </div>
 
       <BackToList setRoute={setRoute} target="customers" label="กลับไปยังลูกค้าทั้งหมด" />

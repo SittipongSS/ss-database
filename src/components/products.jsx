@@ -208,12 +208,34 @@ function ProductDetail({ sku, setRoute, goBack, canGoBack }) {
           )}
           <div className="detail-code" style={{ marginTop: 8 }}>SKU · {p.sku}</div>
         </div>
-        <div className="row" style={{ gap: 8 }}>
+        <div className="detail-kpi-grid">
+          <div className="rail-stat">
+            <div className="stat-label">ราคาขายปัจจุบัน</div>
+            <div className="stat-value">{latestPrice ? M.thb(latestPrice) : "—"}</div>
+            <div className="dim" style={{ fontSize: 11, marginTop: 4 }}>
+              {p.uom ? `ต่อ ${p.uom}` : "—"}
+              {latestPriceDate && <> · {M.fmtDate(latestPriceDate)}</>}
+            </div>
+          </div>
+          <div className="rail-stat">
+            <div className="stat-label">ช่วงราคาในประวัติ</div>
+            <div className="stat-value" style={{ fontSize: 14 }}>{history.length ? `${M.thb(minPrice)} – ${M.thb(maxPrice)}` : "—"}</div>
+            <div className="dim" style={{ fontSize: 11, marginTop: 4 }}>{history.length ? `เฉลี่ย ${M.thb(avgPrice)} · ${history.length} ครั้ง` : "—"}</div>
+          </div>
+          <div className="rail-stat">
+            <div className="stat-label">ขายรวม (ตลอดประวัติ)</div>
+            <div className="stat-value">{totalSold ? M.num(totalSold) : "—"}<span style={{ fontSize: 12, fontWeight: 400, marginLeft: 4, color: "var(--text-2)" }}>{p.uom || ""}</span></div>
+            <div className="dim" style={{ fontSize: 11, marginTop: 4 }}>{ordersOfSku.length} ออเดอร์</div>
+          </div>
+          <div className="rail-stat">
+            <div className="stat-label">รายได้รวม</div>
+            <div className="stat-value">{totalRev ? M.thb(totalRev) : "—"}</div>
+            <div className="dim" style={{ fontSize: 11, marginTop: 4 }}>{ordersOfSku[0]?.date ? `สั่งล่าสุด ${M.fmtDate(ordersOfSku[0].date)}` : "—"}</div>
+          </div>
         </div>
       </div>
 
-      <div className="page-with-rail">
-        <div className="page-main">
+      <div>
           <div className="tabs">
             <div className={"tab " + (tab === "info" ? "active" : "")} onClick={() => setTab("info")}>ข้อมูลสินค้า</div>
             <div className={"tab " + (tab === "price" ? "active" : "")} onClick={() => setTab("price")}>ประวัติราคา ({history.length})</div>
@@ -360,33 +382,6 @@ function ProductDetail({ sku, setRoute, goBack, canGoBack }) {
               </div>
             </div>
           )}
-        </div>
-
-        <aside className="page-rail">
-          <div className="rail-stat">
-            <div className="stat-label">ราคาขายปัจจุบัน</div>
-            <div className="stat-value">{latestPrice ? M.thb(latestPrice) : "—"}</div>
-            <div className="dim" style={{ fontSize: 11, marginTop: 4 }}>
-              {p.uom ? `ต่อ ${p.uom}` : "—"}
-              {latestPriceDate && <> · {M.fmtDate(latestPriceDate)}</>}
-            </div>
-          </div>
-          <div className="rail-stat">
-            <div className="stat-label">ช่วงราคาในประวัติ</div>
-            <div className="stat-value" style={{ fontSize: 14 }}>{history.length ? `${M.thb(minPrice)} – ${M.thb(maxPrice)}` : "—"}</div>
-            <div className="dim" style={{ fontSize: 11, marginTop: 4 }}>{history.length ? `เฉลี่ย ${M.thb(avgPrice)} · ${history.length} ครั้ง` : "—"}</div>
-          </div>
-          <div className="rail-stat">
-            <div className="stat-label">ขายรวม (ตลอดประวัติ)</div>
-            <div className="stat-value">{totalSold ? M.num(totalSold) : "—"}<span style={{ fontSize: 12, fontWeight: 400, marginLeft: 4, color: "var(--text-2)" }}>{p.uom || ""}</span></div>
-            <div className="dim" style={{ fontSize: 11, marginTop: 4 }}>{ordersOfSku.length} ออเดอร์</div>
-          </div>
-          <div className="rail-stat">
-            <div className="stat-label">รายได้รวม</div>
-            <div className="stat-value">{totalRev ? M.thb(totalRev) : "—"}</div>
-            <div className="dim" style={{ fontSize: 11, marginTop: 4 }}>{ordersOfSku[0]?.date ? `สั่งล่าสุด ${M.fmtDate(ordersOfSku[0].date)}` : "—"}</div>
-          </div>
-        </aside>
       </div>
 
       <BackToList setRoute={setRoute} target="products" label="กลับไปยังสินค้าทั้งหมด" />
