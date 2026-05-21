@@ -276,6 +276,11 @@ button { font-family: inherit; }
   .grid-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
+/* KPI horizontal scroll row */
+.kpi-row { display: flex; gap: 12px; overflow-x: auto; -webkit-overflow-scrolling: touch; scroll-snap-type: x mandatory; scrollbar-width: none; margin-bottom: 20px; padding-bottom: 2px; }
+.kpi-row::-webkit-scrollbar { display: none; }
+.kpi-row > * { flex: 1 0 200px; min-width: 0; scroll-snap-align: start; }
+
 /* KPI / Stat */
 .stat { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px 18px; }
 .stat-label { color: var(--text-2); font-size: 12px; display: flex; align-items: center; gap: 6px; margin-bottom: 8px; font-weight: 500; }
@@ -494,8 +499,13 @@ button { font-family: inherit; }
   .invoice h1 { font-size: 20px; }
   .invoice-meta { grid-template-columns: 1fr; gap: 12px; margin-bottom: 20px; }
 
-  /* Period chips — shrink on narrow stat cards */
+  /* Period chips — shrink on narrow stat cards, allow horizontal scroll */
   .period-chip { padding: 0 5px; font-size: 10.5px; height: 20px; }
+  .period-chips { overflow-x: auto; max-width: 100%; scrollbar-width: none; }
+  .period-chips::-webkit-scrollbar { display: none; }
+
+  /* KPI row — fixed card width on mobile so cards scroll */
+  .kpi-row > * { flex: 0 0 200px; }
 
   /* KV list */
   .kv-list { grid-template-columns: minmax(0, auto) minmax(0, 1fr); gap: 8px 12px; }

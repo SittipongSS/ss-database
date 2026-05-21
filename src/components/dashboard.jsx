@@ -303,10 +303,11 @@ function DashV1(props) {
   const { M, totalRev, lastMonth, lastMonthLabel, moMGrowth, lastMonthYoY, recentOrders, setRoute } = props
   return (
     <>
-      <div className="grid grid-3" style={{ marginBottom: 20 }}>
+      <div className="kpi-row">
         <KpiCard label="ยอดขาย 12 เดือน" value={M.thb(totalRev)} delta={lastMonthYoY != null ? `${lastMonthYoY >= 0 ? "+" : ""}${lastMonthYoY.toFixed(1)}% YoY` : null} deltaDir={lastMonthYoY >= 0 ? "up" : "down"} sparkValues={M.monthly.slice(-12).map(m => m.rev)} />
         <KpiCard label={`เดือนล่าสุด · ${lastMonthLabel}`} value={M.thb(lastMonth.rev)} delta={`${moMGrowth >= 0 ? "+" : ""}${moMGrowth.toFixed(1)}% MoM`} deltaDir={moMGrowth >= 0 ? "up" : "down"} sparkValues={M.monthly.slice(-6).map(m => m.rev)} />
         <OrdersKpiCard />
+        <SalesKpiCard />
       </div>
       <div className="grid grid-2" style={{ marginBottom: 20 }}>
         <TopCategoriesCard setRoute={setRoute} />
@@ -399,11 +400,9 @@ function DashV3(props) {
   const shipped = M.orders.filter(o => o.status === "shipped").length
   return (
     <>
-      <div className="grid grid-2" style={{ marginBottom: 20 }}>
+      <div className="kpi-row">
         <AlertCard count={pending} label="รอดำเนินการ" sub="Pending Orders" tone="amber" icon="clock" />
         <AlertCard count={shipped} label="พร้อมส่ง" sub="Ready to Ship" tone="blue" icon="package" />
-      </div>
-      <div className="grid grid-3" style={{ marginBottom: 20 }}>
         <KpiCard label={`ยอดขายเดือนล่าสุด · ${lastMonthLabel}`} value={M.thb(lastMonth.rev)} delta={`${moMGrowth >= 0 ? "+" : ""}${moMGrowth.toFixed(1)}% MoM`} deltaDir={moMGrowth >= 0 ? "up" : "down"} />
         <OrdersKpiCard />
         <SalesKpiCard />
