@@ -160,6 +160,47 @@ function SalesKpiCard() {
   )
 }
 
+function YoYCard() {
+  const M = MOCK
+  const [period, setPeriod] = React.useState("month")
+
+  const { current, previous, label } = React.useMemo(() => {
+    const now = new Date(M.today)
+    const curYear = now.getFullYear()
+    const curMonth = String(now.getMonth() + 1).padStart(2, '0')
+    const curYM = `${curYear}-${curMonth}`
+    const prevYM = `${curYear - 1}-${curMonth}`
+
+    if (period === "month") {
+      const cur  = M.monthly.find(m => m.m === curYM)?.rev  || 0
+      const prev = M.monthly.find(m => m.m === prevYM)?.rev || 0
+      return { current: cur, previous: prev, label: `${TH_MONTHS[+curMonth - 1]} ปีนี้ vs ปีก่อน` }
+    }
+    const cur  = M.monthly.filter(m => m.m.startsWith(String(curYear))).reduce((s, m) => s + m.rev, 0)
+    const prev = M.monthly.filter(m => m.m.startsWith(String(curYear - 1))).reduce((s, m) => s + m.rev, 0)
+    return { current: cur, previous: prev, label: `${curYear + 543} vs ${curYear - 1 + 543}` }
+  }, [period, M.monthly, M.today])
+
+  const pct = previous ? (current - previous) / previous * 100 : null
+
+  return (
+    <div className="stat">
+      <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 6, marginBottom: 6 }}>
+        <div className="stat-label" style={{ margin: 0 }}>การเติบโต · YoY</div>
+        <PeriodChips value={period} onChange={setPeriod} options={["month", "year"]} />
+      </div>
+      <div className="stat-value" style={{ color: pct === null ? undefined : pct >= 0 ? "var(--green)" : "var(--red)" }}>
+        {pct !== null ? `${pct >= 0 ? "+" : ""}${pct.toFixed(1)}%` : "—"}
+      </div>
+      <div className="dim" style={{ fontSize: 11, marginTop: 4 }}>{label}</div>
+      <div className="dim" style={{ fontSize: 11, marginTop: 2 }}>
+        {current ? `ปีนี้ ${M.thb(current)}` : "ปีนี้ —"}
+        {previous ? ` · ปีก่อน ${M.thb(previous)}` : " · ปีก่อน —"}
+      </div>
+    </div>
+  )
+}
+
 function OrdersTrendChart() {
   const M = MOCK
   const [period, setPeriod] = React.useState("month")
@@ -296,7 +337,7 @@ function DashV1(props) {
   return (
     <>
       <div className="kpi-row">
-        <KpiCard label="ยอดขาย 12 เดือน" value={M.thb(totalRev)} sub={prevYearRev ? `vs ปีก่อน ${M.thb(prevYearRev)}` : null} />
+        <YoYCard />
         <KpiCard label={`เดือนล่าสุด · ${lastMonthLabel}`} value={M.thb(lastMonth.rev)} sub={prevMonth ? `vs เดือนก่อน ${M.thb(prevMonth.rev)}` : null} />
         <OrdersKpiCard />
         <SalesKpiCard />
