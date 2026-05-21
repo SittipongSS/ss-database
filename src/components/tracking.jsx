@@ -226,7 +226,7 @@ function PriceHistoryPage({ initialSku, setRoute }) {
         </div>
       </div>
 
-      <div className="grid" style={{ gridTemplateColumns: "320px minmax(0, 1fr)", gap: 16 }}>
+      <div className="grid price-history-grid">
         <div className="card" style={{ alignSelf: "start" }}>
           <div className="card-head"><h3>SKU ที่มีประวัติราคา ({skusWithHistory.length})</h3></div>
           <div style={{ padding: 10, borderBottom: "1px solid var(--border)" }}>
