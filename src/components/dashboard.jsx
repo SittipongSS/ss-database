@@ -216,6 +216,12 @@ function YoYCard() {
   )
 }
 
+function fmtRevChart(v) {
+  if (v >= 1e6) return (v / 1e6).toFixed(1) + 'ล.'
+  if (v >= 1e3) return (v / 1e3).toFixed(0) + 'K'
+  return v.toLocaleString('th-TH')
+}
+
 function MonthlyRevenueChart() {
   const M = MOCK
   const data = M.monthly
@@ -232,7 +238,7 @@ function MonthlyRevenueChart() {
         <h3>ยอดขายรายเดือน · Monthly Revenue</h3>
       </div>
       <div className="chart-wrap">
-        {data.length === 0 ? <div className="empty">ไม่มีข้อมูล</div> : <BarChart data={data} height={240} valueLabels />}
+        {data.length === 0 ? <div className="empty">ไม่มีข้อมูล</div> : <BarChart data={data} height={240} valueLabels formatY={fmtRevChart} />}
       </div>
       <div className="dim" style={{ padding: "10px 18px", fontSize: 11, borderTop: "1px solid var(--border)" }}>
         รวม 12 เดือนล่าสุด {M.thb(total)}
