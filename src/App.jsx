@@ -35,7 +35,7 @@ function App() {
 
   useEffect(() => {
     if (!SHEETS_URL) return
-    fetch(SHEETS_URL)
+    fetch('/api/sheets')
       .then(r => r.json())
       .then(data => { MOCK.reload(data); setDataReady(true) })
       .catch(() => setDataReady(true))
