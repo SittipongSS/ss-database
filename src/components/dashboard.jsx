@@ -187,13 +187,14 @@ function YoYCard() {
     const curMonth = String(now.getMonth() + 1).padStart(2, '0')
     const curYM = `${curYear}-${curMonth}`
     const prevYM = `${curYear - 1}-${curMonth}`
+    const valid = M.monthly.filter(m => /^\d{4}-\d{2}$/.test(m.m))
     if (period === "month") {
-      const cur  = M.monthly.find(m => m.m === curYM)?.rev  || 0
-      const prev = M.monthly.find(m => m.m === prevYM)?.rev || 0
+      const cur  = valid.find(m => m.m === curYM)?.rev  || 0
+      const prev = valid.find(m => m.m === prevYM)?.rev || 0
       return { current: cur, previous: prev, label: `${TH_MONTHS[+curMonth - 1]} ปีนี้ vs ปีก่อน` }
     }
-    const cur  = M.monthly.filter(m => m.m.startsWith(String(curYear))).reduce((s, m) => s + m.rev, 0)
-    const prev = M.monthly.filter(m => m.m.startsWith(String(curYear - 1))).reduce((s, m) => s + m.rev, 0)
+    const cur  = valid.filter(m => m.m.startsWith(String(curYear))).reduce((s, m) => s + m.rev, 0)
+    const prev = valid.filter(m => m.m.startsWith(String(curYear - 1))).reduce((s, m) => s + m.rev, 0)
     return { current: cur, previous: prev, label: `${curYear + 543} vs ${curYear - 1 + 543}` }
   }, [period, M.monthly, M.today])
   const pct = previous ? (current - previous) / previous * 100 : null
@@ -217,10 +218,13 @@ function YoYCard() {
 
 function MonthlyRevenueChart() {
   const M = MOCK
-  const data = M.monthly.slice(-12).map((m, i, arr) => {
-    const [y, mo] = m.m.split("-")
-    return { x: `${TH_MONTHS[+mo - 1]} ${String((+y + 543) % 100).padStart(2, "0")}`, y: m.rev, highlight: i === arr.length - 1 }
-  })
+  const data = M.monthly
+    .filter(m => /^\d{4}-\d{2}$/.test(m.m))
+    .slice(-12)
+    .map((m, i, arr) => {
+      const [y, mo] = m.m.split("-")
+      return { x: `${TH_MONTHS[+mo - 1]} ${String((+y + 543) % 100).padStart(2, "0")}`, y: m.rev, highlight: i === arr.length - 1 }
+    })
   const total = data.reduce((s, d) => s + d.y, 0)
   return (
     <div className="card" style={{ marginBottom: 20 }}>
