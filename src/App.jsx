@@ -15,9 +15,12 @@ const TWEAK_DEFAULTS = {
   dashboardVariant: "v1",
 }
 
+const SHEETS_URL = import.meta.env.VITE_SHEETS_URL
+
 function App() {
   const [history, setHistory] = useState(["dashboard"])
   const route = history[history.length - 1]
+  const [dataReady, setDataReady] = useState(!SHEETS_URL)
   const setRoute = useCallback((r) => {
     setHistory(h => h[h.length - 1] === r ? h : [...h, r])
   }, [])
@@ -29,6 +32,14 @@ function App() {
   const [query, setQuery] = useState("")
   const [mobileOpen, setMobileOpen] = useState(false)
   const [tweaks, setTweak] = useTweaks(TWEAK_DEFAULTS)
+
+  useEffect(() => {
+    if (!SHEETS_URL) return
+    fetch(SHEETS_URL)
+      .then(r => r.json())
+      .then(data => { MOCK.reload(data); setDataReady(true) })
+      .catch(() => setDataReady(true))
+  }, [])
 
   useEffect(() => {
     const root = document.documentElement
@@ -67,6 +78,15 @@ function App() {
 
   const M = MOCK
   const [page, param] = route.split(":")
+
+  if (!dataReady) return (
+    <div style={{ display: "grid", placeItems: "center", height: "100vh", background: "var(--bg)", color: "var(--text-2)", fontFamily: "var(--font)" }}>
+      <div style={{ textAlign: "center" }}>
+        <div style={{ fontSize: 22, fontWeight: 600, marginBottom: 6 }}>กำลังโหลดข้อมูล…</div>
+        <div style={{ fontSize: 13 }}>Loading data from Google Sheets</div>
+      </div>
+    </div>
+  )
   const crumbs = useMemo(() => {
     const map = {
       dashboard: [{ label: "แดชบอร์ด" }],
