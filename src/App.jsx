@@ -84,6 +84,17 @@ function App() {
     }
   }, [page, fetchSheet])
 
+  // Auto-refresh all loaded sheets every 5 minutes
+  useEffect(() => {
+    if (!SHEETS_URL) return
+    const id = setInterval(() => {
+      fetchSheet('customers')
+      fetchSheet('products')
+      if (loadedRef.current.orders) fetchSheet('orders')
+    }, 5 * 60 * 1000)
+    return () => clearInterval(id)
+  }, [fetchSheet])
+
   useEffect(() => {
     const root = document.documentElement
     root.setAttribute("data-theme", tweaks.theme)
