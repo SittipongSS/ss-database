@@ -257,7 +257,7 @@ function ProductDetail({ sku, setRoute, goBack, canGoBack }) {
 
               <div className="card">
                 <div className="card-head"><h3>การเปลี่ยนแปลงราคา · Price Points</h3></div>
-                <div style={{ overflowX: "auto" }}>
+                <div className="tbl-scroll">
                 <table className="tbl">
                   <thead><tr><th>วันที่</th><th>เอกสาร</th><th>รหัสลูกค้า</th><th>ชื่อบริษัท</th><th className="num">ราคา</th><th className="num">เทียบครั้งก่อน</th></tr></thead>
                   <tbody>
@@ -289,6 +289,7 @@ function ProductDetail({ sku, setRoute, goBack, canGoBack }) {
 
           {tab === "orders" && (
             <div className="card">
+              <div className="tbl-scroll">
               <table className="tbl">
                 <thead><tr><th>เลขเอกสาร</th><th>วันที่</th><th>ลูกค้า</th><th className="num">จำนวน</th><th className="num">ราคา/หน่วย</th><th className="num">รวม</th><th>สถานะ</th></tr></thead>
                 <tbody>
@@ -308,11 +309,13 @@ function ProductDetail({ sku, setRoute, goBack, canGoBack }) {
                   })}
                 </tbody>
               </table>
+              </div>
             </div>
           )}
 
           {tab === "customers" && (
             <div className="card">
+              <div className="tbl-scroll">
               <table className="tbl">
                 <thead><tr><th>รหัส</th><th>ลูกค้า</th><th className="num">จำนวนรวม</th><th className="num">รายได้รวม</th><th className="num">ครั้ง</th><th className="num">ราคาล่าสุด</th><th>สั่งล่าสุด</th></tr></thead>
                 <tbody>
@@ -332,6 +335,7 @@ function ProductDetail({ sku, setRoute, goBack, canGoBack }) {
                   })}
                 </tbody>
               </table>
+              </div>
             </div>
           )}
         </div>

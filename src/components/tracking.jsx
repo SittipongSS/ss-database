@@ -293,7 +293,7 @@ function PriceHistoryPage({ initialSku, setRoute }) {
             {history.length === 0
               ? <div className="empty">ยังไม่มีประวัติราคา</div>
               : (
-                <div style={{ overflowX: "auto" }}>
+                <div className="tbl-scroll">
                 <table className="tbl">
                   <thead><tr><th>วันที่</th><th>เอกสาร</th><th>รหัสลูกค้า</th><th>ชื่อบริษัท</th><th className="num">ราคา</th><th className="num">เปลี่ยน</th></tr></thead>
                   <tbody>

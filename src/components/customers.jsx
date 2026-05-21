@@ -201,6 +201,7 @@ function CustomerDetail({ id, setRoute, goBack, canGoBack }) {
 
           {tab === "orders" && (
             <div className="card">
+              <div className="tbl-scroll">
               <table className="tbl">
                 <thead><tr><th>เลขเอกสาร</th><th>วันที่</th><th className="num">ยอดรวม</th><th>สถานะ</th></tr></thead>
                 <tbody>
@@ -214,11 +215,13 @@ function CustomerDetail({ id, setRoute, goBack, canGoBack }) {
                   ))}
                 </tbody>
               </table>
+              </div>
             </div>
           )}
 
           {tab === "skus" && (
             <div className="card">
+              <div className="tbl-scroll">
               <table className="tbl">
                 <thead><tr><th>SKU</th><th>ชื่อสินค้า / สูตร</th><th>หมวด</th><th className="num">ราคา</th></tr></thead>
                 <tbody>
@@ -238,6 +241,7 @@ function CustomerDetail({ id, setRoute, goBack, canGoBack }) {
                   })}
                 </tbody>
               </table>
+              </div>
             </div>
           )}
         </div>

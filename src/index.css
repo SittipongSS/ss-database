@@ -242,7 +242,7 @@ button { font-family: inherit; }
 .btn.icon-only { width: 32px; padding: 0; justify-content: center; }
 
 /* Cards */
-.card { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-lg); }
+.card { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
 .card-pad { padding: 18px; }
 .card-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid var(--border); }
 .card-head h3 { margin: 0; font-size: 14px; font-weight: 600; letter-spacing: -0.005em; min-width: 0; flex-shrink: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -266,9 +266,11 @@ button { font-family: inherit; }
 
 /* Grids */
 .grid { display: grid; gap: var(--gap); }
+.grid > * { min-width: 0; }
 .grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.dash-hero-grid { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); }
 @media (max-width: 1100px) {
   .grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .grid-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -372,6 +374,7 @@ button { font-family: inherit; }
 .tab.active { color: var(--text); border-color: var(--text); font-weight: 500; }
 
 .chart-wrap { padding: 16px 18px 12px; overflow: hidden; }
+.chart-wrap svg { display: block; width: 100%; height: auto; }
 
 /* Tracking */
 .pivot-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
@@ -380,14 +383,18 @@ button { font-family: inherit; }
 .pivot .ico { width: 13px; height: 13px; }
 
 /* Invoice */
-.invoice { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 36px 40px; max-width: 880px; margin: 0 auto; }
-.invoice-head { display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 24px; margin-bottom: 24px; }
+.invoice { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 36px 40px; max-width: 880px; margin: 0 auto; overflow: hidden; }
+.invoice-head { display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 24px; margin-bottom: 24px; gap: 16px; }
 .invoice h1 { margin: 0 0 4px; font-size: 26px; letter-spacing: -0.02em; }
+.invoice-meta { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; margin-bottom: 32px; }
+.invoice-tbl-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.invoice-totals { width: 320px; max-width: 100%; }
 
 /* Misc */
 .muted { color: var(--text-2); }
 .dim { color: var(--text-3); }
 .row { display: flex; align-items: center; gap: var(--gap); }
+.tbl-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 .row-between { display: flex; align-items: center; justify-content: space-between; gap: var(--gap); }
 .scroll-x { overflow-x: auto; }
 .hr { height: 1px; background: var(--border); border: none; margin: 16px 0; }
@@ -446,6 +453,7 @@ button { font-family: inherit; }
   .sidebar .search-bar { display: flex; }
   .grid-4, .grid-3, .grid-2 { grid-template-columns: 1fr; }
   .grid { gap: 12px; grid-template-columns: 1fr; }
+  .dash-hero-grid { grid-template-columns: 1fr; }
   .page { padding: 16px 14px 40px; }
   .page-head { flex-direction: column; align-items: stretch; }
   .page-head .row { flex-wrap: wrap; }
@@ -480,9 +488,17 @@ button { font-family: inherit; }
   .page-rail { position: static !important; }
 
   /* Invoice */
-  .invoice { padding: 16px; }
+  .invoice { padding: 14px; }
   .invoice-head { flex-direction: column; gap: 12px; }
   .invoice-head > div:last-child { text-align: left; }
+  .invoice h1 { font-size: 20px; }
+  .invoice-meta { grid-template-columns: 1fr; gap: 12px; margin-bottom: 20px; }
+
+  /* Period chips — shrink on narrow stat cards */
+  .period-chip { padding: 0 5px; font-size: 10.5px; height: 20px; }
+
+  /* KV list */
+  .kv-list { grid-template-columns: minmax(0, auto) minmax(0, 1fr); gap: 8px 12px; }
 
   /* Tabs */
   .tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; }

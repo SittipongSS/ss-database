@@ -134,7 +134,7 @@ function OrdersKpiCard() {
   const avg = count ? total / count : 0
   return (
     <div className="stat">
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, marginBottom: 6 }}>
+      <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 6, marginBottom: 6 }}>
         <div className="stat-label" style={{ margin: 0 }}>คำสั่งซื้อทั้งหมด</div>
         <PeriodChips value={period} onChange={setPeriod} options={["all", "month", "year"]} />
       </div>
@@ -155,7 +155,7 @@ function SalesKpiCard() {
   const count = filtered.length
   return (
     <div className="stat">
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, marginBottom: 6 }}>
+      <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 6, marginBottom: 6 }}>
         <div className="stat-label" style={{ margin: 0 }}>ยอดขาย</div>
         <PeriodChips value={period} onChange={setPeriod} options={["all", "month", "year"]} />
       </div>
@@ -275,6 +275,7 @@ function PriceChangesCard({ items, setRoute }) {
   return (
     <div className="card">
       <div className="card-head"><h3>ราคาเปลี่ยนแปลงล่าสุด · Recent Price Changes</h3></div>
+      <div className="tbl-scroll">
       <table className="tbl">
         <thead><tr><th>SKU</th><th>สินค้า</th><th className="num">ราคาเก่า</th><th className="num">ราคาใหม่</th><th className="num">เปลี่ยน</th><th>วันที่</th></tr></thead>
         <tbody>
@@ -293,6 +294,7 @@ function PriceChangesCard({ items, setRoute }) {
           })}
         </tbody>
       </table>
+      </div>
     </div>
   )
 }
@@ -315,6 +317,7 @@ function DashV1(props) {
           <h3>คำสั่งซื้อล่าสุด · Recent Orders</h3>
           <span className="more" style={{ cursor: "pointer" }} onClick={() => setRoute("orders")}>ดูทั้งหมด</span>
         </div>
+        <div className="tbl-scroll">
         <table className="tbl">
           <thead><tr><th>เลขเอกสาร</th><th>วันที่</th><th>ลูกค้า</th><th className="num">ยอดรวม</th><th>สถานะ</th></tr></thead>
           <tbody>
@@ -332,6 +335,7 @@ function DashV1(props) {
             })}
           </tbody>
         </table>
+        </div>
       </div>
     </>
   )
@@ -341,7 +345,7 @@ function DashV2(props) {
   const { M, totalRev, lastMonthYoY, lastMonthLabel, recentOrders, setRoute } = props
   return (
     <>
-      <div className="grid" style={{ gridTemplateColumns: "minmax(0, 2fr) minmax(0, 1fr)", marginBottom: 20 }}>
+      <div className="grid dash-hero-grid" style={{ marginBottom: 20 }}>
         <div className="card card-pad" style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", minHeight: 180 }}>
           <div>
             <div className="stat-label">ยอดขายรวม 12 เดือน</div>
@@ -365,6 +369,7 @@ function DashV2(props) {
           <h3>คำสั่งซื้อล่าสุด · Recent Orders</h3>
           <span className="more" style={{ cursor: "pointer" }} onClick={() => setRoute("orders")}>ดูทั้งหมด</span>
         </div>
+        <div className="tbl-scroll">
         <table className="tbl">
           <thead><tr><th>เลขเอกสาร</th><th>วันที่</th><th>ลูกค้า</th><th className="num">ยอดรวม</th><th>สถานะ</th></tr></thead>
           <tbody>
@@ -382,6 +387,7 @@ function DashV2(props) {
             })}
           </tbody>
         </table>
+        </div>
       </div>
     </>
   )
@@ -408,6 +414,7 @@ function DashV3(props) {
           <h3>ออเดอร์ที่ต้องดู · Needs Attention</h3>
           <span className="more">Pending / Ready to Ship</span>
         </div>
+        <div className="tbl-scroll">
         <table className="tbl">
           <thead><tr><th>เลขเอกสาร</th><th>ลูกค้า</th><th>วันที่</th><th className="num">ยอดรวม</th><th>สถานะ</th></tr></thead>
           <tbody>
@@ -422,6 +429,7 @@ function DashV3(props) {
             ))}
           </tbody>
         </table>
+        </div>
       </div>
     </>
   )

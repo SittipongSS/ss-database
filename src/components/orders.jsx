@@ -188,7 +188,7 @@ function InvoiceDetail({ doc, setRoute, goBack, canGoBack }) {
           </div>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 24, marginBottom: 32 }}>
+        <div className="invoice-meta">
           <div>
             <div className="dim" style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 6 }}>ลูกค้า · Customer</div>
             <div style={{ fontWeight: 600 }}>{c?.name}</div>
@@ -213,7 +213,8 @@ function InvoiceDetail({ doc, setRoute, goBack, canGoBack }) {
           </div>
         </div>
 
-        <table className="tbl" style={{ border: "1px solid var(--border)", borderRadius: 8, overflow: "hidden" }}>
+        <div className="invoice-tbl-wrap">
+        <table className="tbl">
           <thead>
             <tr>
               <th style={{ width: 32 }}>#</th>
@@ -244,9 +245,10 @@ function InvoiceDetail({ doc, setRoute, goBack, canGoBack }) {
             })}
           </tbody>
         </table>
+        </div>
 
         <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 24 }}>
-          <div style={{ width: 320 }}>
+          <div className="invoice-totals">
             <div className="row-between" style={{ padding: "6px 0", fontSize: 13 }}>
               <span className="muted">Subtotal</span>
               <span className="mono">{M.thb(subtotal)}</span>
