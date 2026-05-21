@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react'
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import MOCK from './lib/mock.js'
 import { useTweaks, TweaksPanel, TweakSection, TweakRadio, TweakSelect } from './components/tweaks.jsx'
 import { Sidebar, Topbar } from './components/shell.jsx'
@@ -33,25 +33,52 @@ function App() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [tweaks, setTweak] = useTweaks(TWEAK_DEFAULTS)
 
-  useEffect(() => {
-    if (!SHEETS_URL) return
-    // Show cached data instantly on repeat visits
+  // Derive page early so effects can use it in deps
+  const [page] = route.split(":")
+
+  const loadedRef = useRef({ customers: false, products: false, orders: false })
+
+  // Fetch one sheet-tab, load cache instantly then refresh in background
+  const fetchSheet = useCallback(async (sheetParam) => {
+    const cacheKey = `ss_${sheetParam}`
     try {
-      const cached = localStorage.getItem('ss_data')
+      const cached = localStorage.getItem(cacheKey)
       if (cached) { MOCK.reload(JSON.parse(cached)); forceUpdate(v => v + 1) }
     } catch(e) {}
-    // Fetch fresh data in background
-    fetch('/api/sheets')
-      .then(r => r.json())
-      .then(data => {
-        if (data?.customers) {
-          MOCK.reload(data)
-          forceUpdate(v => v + 1)
-          try { localStorage.setItem('ss_data', JSON.stringify(data)) } catch(e) {}
-        }
-      })
-      .catch(() => {})
+    try {
+      const r = await fetch(`/api/sheets?sheet=${sheetParam}`)
+      const data = await r.json()
+      if (data && !data.error) {
+        MOCK.reload(data)
+        forceUpdate(v => v + 1)
+        try { localStorage.setItem(cacheKey, JSON.stringify(data)) } catch(e) {}
+      }
+    } catch(e) {}
   }, [])
+
+  // On mount: load customers + products immediately (small/fast)
+  useEffect(() => {
+    if (!SHEETS_URL) return
+    // Migrate old full-cache key on first run
+    try {
+      const full = localStorage.getItem('ss_data')
+      if (full) { MOCK.reload(JSON.parse(full)); forceUpdate(v => v + 1); localStorage.removeItem('ss_data') }
+    } catch(e) {}
+    loadedRef.current.customers = true
+    loadedRef.current.products  = true
+    fetchSheet('customers')
+    fetchSheet('products')
+  }, [fetchSheet])
+
+  // Lazy-load orders when user first visits dashboard / orders / tracking
+  useEffect(() => {
+    if (!SHEETS_URL) return
+    const needsOrders = page === 'dashboard' || page === 'orders' || page === 'tracking'
+    if (needsOrders && !loadedRef.current.orders) {
+      loadedRef.current.orders = true
+      fetchSheet('orders')
+    }
+  }, [page, fetchSheet])
 
   useEffect(() => {
     const root = document.documentElement
@@ -89,7 +116,7 @@ function App() {
   }, [route, setRoute])
 
   const M = MOCK
-  const [page, param] = route.split(":")
+  const [, param] = route.split(":")
 
   const crumbs = useMemo(() => {
     const map = {

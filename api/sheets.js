@@ -4,7 +4,9 @@ export default async function handler(req, res) {
     return res.status(404).json({ error: 'VITE_SHEETS_URL not configured' })
   }
   try {
-    const response = await fetch(url, { redirect: 'follow' })
+    const sheet = req.query?.sheet || 'all'
+    const targetUrl = `${url}?sheet=${encodeURIComponent(sheet)}`
+    const response = await fetch(targetUrl, { redirect: 'follow' })
     const data = await response.json()
     res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate=3600')
     return res.status(200).json(data)

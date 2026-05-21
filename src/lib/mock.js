@@ -133,7 +133,16 @@ const MOCK = (() => {
     return out.sort((a, b) => b.when.localeCompare(a.when)).slice(0, 8);
   }
   function reload(liveData) {
-    _apply({ ...RAW, ...liveData });
+    // Merge into current live state so partial tab loads don't wipe other tabs
+    _apply({
+      customers,
+      products,
+      orders,
+      monthly,
+      categories,
+      mainNames,
+      ...liveData,
+    });
   }
   return {
     get customers() { return customers; },
