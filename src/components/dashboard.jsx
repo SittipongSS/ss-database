@@ -160,42 +160,19 @@ function SalesKpiCard() {
   )
 }
 
-function YoYCard() {
+function ShipStatusCard() {
   const M = MOCK
-  const [period, setPeriod] = React.useState("month")
-
-  const { current, previous, label } = React.useMemo(() => {
-    const now = new Date(M.today)
-    const curYear = now.getFullYear()
-    const curMonth = String(now.getMonth() + 1).padStart(2, '0')
-    const curYM = `${curYear}-${curMonth}`
-    const prevYM = `${curYear - 1}-${curMonth}`
-
-    if (period === "month") {
-      const cur  = M.monthly.find(m => m.m === curYM)?.rev  || 0
-      const prev = M.monthly.find(m => m.m === prevYM)?.rev || 0
-      return { current: cur, previous: prev, label: `${TH_MONTHS[+curMonth - 1]} ปีนี้ vs ปีก่อน` }
-    }
-    const cur  = M.monthly.filter(m => m.m.startsWith(String(curYear))).reduce((s, m) => s + m.rev, 0)
-    const prev = M.monthly.filter(m => m.m.startsWith(String(curYear - 1))).reduce((s, m) => s + m.rev, 0)
-    return { current: cur, previous: prev, label: `${curYear + 543} vs ${curYear - 1 + 543}` }
-  }, [period, M.monthly, M.today])
-
-  const pct = previous ? (current - previous) / previous * 100 : null
-
+  const pending   = M.orders.filter(o => o.status === "pending").length
+  const shipped   = M.orders.filter(o => o.status === "shipped").length
+  const delivered = M.orders.filter(o => o.status === "delivered").length
   return (
     <div className="stat">
-      <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 6, marginBottom: 6 }}>
-        <div className="stat-label" style={{ margin: 0 }}>การเติบโต · YoY</div>
-        <PeriodChips value={period} onChange={setPeriod} options={["month", "year"]} />
-      </div>
-      <div className="stat-value" style={{ color: pct === null ? undefined : pct >= 0 ? "var(--green)" : "var(--red)" }}>
-        {pct !== null ? `${pct >= 0 ? "+" : ""}${pct.toFixed(1)}%` : "—"}
-      </div>
-      <div className="dim" style={{ fontSize: 11, marginTop: 4 }}>{label}</div>
-      <div className="dim" style={{ fontSize: 11, marginTop: 2 }}>
-        {current ? `ปีนี้ ${M.thb(current)}` : "ปีนี้ —"}
-        {previous ? ` · ปีก่อน ${M.thb(previous)}` : " · ปีก่อน —"}
+      <div className="stat-label">สถานะส่ง</div>
+      <div className="stat-value">{M.num(delivered)}</div>
+      <div className="dim" style={{ fontSize: 11, marginTop: 4 }}>ออเดอร์ส่งเรียบร้อย</div>
+      <div style={{ display: "flex", gap: 6, marginTop: 8, flexWrap: "wrap" }}>
+        <span className="badge amber"><span className="dot" />รอดำเนินการ {M.num(pending)}</span>
+        <span className="badge blue"><span className="dot" />พร้อมส่ง {M.num(shipped)}</span>
       </div>
     </div>
   )
@@ -337,8 +314,7 @@ function DashV1(props) {
   return (
     <>
       <div className="kpi-row">
-        <YoYCard />
-        <KpiCard label={`เดือนล่าสุด · ${lastMonthLabel}`} value={M.thb(lastMonth.rev)} sub={prevMonth ? `vs เดือนก่อน ${M.thb(prevMonth.rev)}` : null} />
+        <ShipStatusCard />
         <OrdersKpiCard />
         <SalesKpiCard />
       </div>
@@ -380,7 +356,6 @@ function DashV2(props) {
   return (
     <>
       <div className="kpi-row">
-        <YoYCard />
         <SalesKpiCard />
         <OrdersKpiCard />
       </div>
@@ -426,7 +401,6 @@ function DashV3(props) {
       <div className="kpi-row">
         <AlertCard count={pending} label="รอดำเนินการ" sub="Pending Orders" tone="amber" icon="clock" />
         <AlertCard count={shipped} label="พร้อมส่ง" sub="Ready to Ship" tone="blue" icon="package" />
-        <KpiCard label={`ยอดขายเดือนล่าสุด · ${lastMonthLabel}`} value={M.thb(lastMonth.rev)} sub={prevMonth ? `vs เดือนก่อน ${M.thb(prevMonth.rev)}` : null} />
         <OrdersKpiCard />
         <SalesKpiCard />
       </div>
