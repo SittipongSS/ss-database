@@ -6,9 +6,11 @@ export function Sidebar({ route, setRoute, sidebarMode, setSidebarMode, onSearch
   const M = MOCK
   const items = [
     { id: "dashboard", label: "แดชบอร์ด", labelEn: "Dashboard", icon: "dashboard" },
+    { type: "section", label: "Data" },
     { id: "orders", label: "คำสั่งซื้อ", labelEn: "Orders", icon: "orders", count: M.orders.length },
     { id: "customers", label: "ลูกค้า", labelEn: "Customers", icon: "customers", count: M.customers.length },
     { id: "products", label: "สินค้า", labelEn: "Products", icon: "products", count: M.products.length },
+    { type: "section", label: "Insights" },
     { id: "prices", label: "ประวัติราคา", labelEn: "Price History", icon: "trending" },
   ]
 
