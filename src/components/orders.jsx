@@ -131,11 +131,11 @@ function OrdersList({ setRoute }) {
             <tr>
               <SortTh col="doc" sort={sort} onSort={toggleSort}>เลขเอกสาร</SortTh>
               <SortTh col="date" sort={sort} onSort={toggleSort}>วันที่สั่ง</SortTh>
-              <SortTh col="dueDate" sort={sort} onSort={toggleSort}>กำหนดส่ง</SortTh>
               <SortTh col="customer" sort={sort} onSort={toggleSort}>รหัสลูกค้า</SortTh>
               <SortTh col="customerName" sort={sort} onSort={toggleSort}>ชื่อลูกค้า</SortTh>
               <SortTh col="qty" sort={sort} onSort={toggleSort} className="num">จำนวน</SortTh>
               <SortTh col="total" sort={sort} onSort={toggleSort} className="num">ยอดรวม</SortTh>
+              <SortTh col="dueDate" sort={sort} onSort={toggleSort}>กำหนดส่ง</SortTh>
               <SortTh col="status" sort={sort} onSort={toggleSort}>สถานะ</SortTh>
             </tr>
           </thead>
@@ -148,13 +148,13 @@ function OrdersList({ setRoute }) {
                 <tr key={o.doc + "|" + o.customer + "|" + idx} onClick={() => setRoute("orders:" + o.doc)}>
                   <td className="code">{o.doc}</td>
                   <td>{M.fmtDate(o.date)}</td>
-                  <td>{o.dueDate ? M.fmtDate(o.dueDate) : <span className="dim">—</span>}</td>
                   <td className="code">{o.customer}</td>
                   <td style={{ maxWidth: 240 }}>
                     <div style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c?.name || o.customerName || o.customer}</div>
                   </td>
                   <td className="num">{M.num(M.orderQty(o))}</td>
                   <td className="num"><strong>{M.thb(M.orderTotal(o))}</strong></td>
+                  <td>{o.dueDate ? M.fmtDate(o.dueDate) : <span className="dim">—</span>}</td>
                   <td><StatusBadge status={o.status} /></td>
                 </tr>
               )
