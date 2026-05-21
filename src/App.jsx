@@ -33,42 +33,46 @@ function App() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [tweaks, setTweak] = useTweaks(TWEAK_DEFAULTS)
 
-  // Derive page early so effects can use it in deps
-  const [page] = route.split(":")
+  // page derived early — used in effects deps AND in render
+  const [page, param] = route.split(":")
 
   const loadedRef = useRef({ customers: false, products: false, orders: false })
 
-  // Fetch one sheet-tab, load cache instantly then refresh in background
+  const reloadMock = useCallback((data) => {
+    MOCK.reload(data)
+    forceUpdate(v => v + 1)
+  }, [])
+
+  // Fetch one sheet-tab: load cache instantly, then refresh in background
   const fetchSheet = useCallback(async (sheetParam) => {
     const cacheKey = `ss_${sheetParam}`
     try {
       const cached = localStorage.getItem(cacheKey)
-      if (cached) { MOCK.reload(JSON.parse(cached)); forceUpdate(v => v + 1) }
+      if (cached) reloadMock(JSON.parse(cached))
     } catch(e) {}
     try {
       const r = await fetch(`/api/sheets?sheet=${sheetParam}`)
       const data = await r.json()
       if (data && !data.error) {
-        MOCK.reload(data)
-        forceUpdate(v => v + 1)
+        reloadMock(data)
         try { localStorage.setItem(cacheKey, JSON.stringify(data)) } catch(e) {}
       }
-    } catch(e) {}
-  }, [])
+    } catch(e) { console.error('[sheets] fetch failed', sheetParam, e) }
+  }, [reloadMock])
 
   // On mount: load customers + products immediately (small/fast)
   useEffect(() => {
     if (!SHEETS_URL) return
-    // Migrate old full-cache key on first run
+    // Migrate old full-cache key on first run after lazy-loading upgrade
     try {
       const full = localStorage.getItem('ss_data')
-      if (full) { MOCK.reload(JSON.parse(full)); forceUpdate(v => v + 1); localStorage.removeItem('ss_data') }
+      if (full) { reloadMock(JSON.parse(full)); localStorage.removeItem('ss_data') }
     } catch(e) {}
     loadedRef.current.customers = true
     loadedRef.current.products  = true
     fetchSheet('customers')
     fetchSheet('products')
-  }, [fetchSheet])
+  }, [fetchSheet, reloadMock])
 
   // Lazy-load orders when user first visits dashboard / orders / tracking
   useEffect(() => {
@@ -116,7 +120,6 @@ function App() {
   }, [route, setRoute])
 
   const M = MOCK
-  const [, param] = route.split(":")
 
   const crumbs = useMemo(() => {
     const map = {

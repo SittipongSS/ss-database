@@ -16,15 +16,18 @@ function CustomersList({ setRoute }) {
     const lifetime = orders.reduce((s, o) => s + M.orderTotal(o), 0)
     const daysAgo = last ? M.dayDiff(last.date, M.today) : null
     return { ...c, ordersCount: orders.length, lifetime, lastDate: last?.date, daysAgo }
-  }), [])
+  }), [M.customers, M.orders])
 
-  const filtered = enriched.filter(c =>
-    (!q ||
-      (c.name || "").toLowerCase().includes(q.toLowerCase()) ||
-      (c.short || "").toLowerCase().includes(q.toLowerCase()) ||
-      (c.id || "").toLowerCase().includes(q.toLowerCase()) ||
-      (c.brand || "").toLowerCase().includes(q.toLowerCase()))
-  ).sort((a, b) => b.lifetime - a.lifetime)
+  const filtered = React.useMemo(() => {
+    const ql = q.toLowerCase()
+    return enriched.filter(c =>
+      !q ||
+      (c.name || "").toLowerCase().includes(ql) ||
+      (c.short || "").toLowerCase().includes(ql) ||
+      (c.id || "").toLowerCase().includes(ql) ||
+      (c.brand || "").toLowerCase().includes(ql)
+    ).sort((a, b) => b.lifetime - a.lifetime)
+  }, [enriched, q])
 
   const startIdx = (page - 1) * pageSize
   const shown = filtered.slice(startIdx, startIdx + pageSize)

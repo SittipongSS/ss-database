@@ -36,21 +36,19 @@ function OrdersList({ setRoute }) {
     return { from: p?.from || null, to: p?.to || null }
   }, [datePreset, dateFrom, dateTo])
 
-  const filtered = M.orders.filter(o => {
+  const filtered = React.useMemo(() => M.orders.filter(o => {
     if (status !== "all" && o.status !== status) return false
     if (effective.from && o.date < effective.from) return false
     if (effective.to && o.date > effective.to) return false
     if (q) {
       const ql = q.toLowerCase()
-      const hay = [
-        o.doc, o.customer,
-        M.customerOf(o.customer)?.short, M.customerOf(o.customer)?.name,
-        ...o.items.map(i => i.sku),
-      ].filter(Boolean).join(" ").toLowerCase()
+      const c = M.customerOf(o.customer)
+      const hay = [o.doc, o.customer, c?.short, c?.name, ...o.items.map(i => i.sku)]
+        .filter(Boolean).join(" ").toLowerCase()
       if (!hay.includes(ql)) return false
     }
     return true
-  })
+  }), [M.orders, M.customers, status, effective, q])
 
   return (
     <div className="page">
@@ -154,7 +152,7 @@ function OrdersList({ setRoute }) {
 
 function InvoiceDetail({ doc, setRoute, goBack, canGoBack }) {
   const M = MOCK
-  const order = M.orders.find(o => o.doc === doc)
+  const order = M.orderOf(doc)
   if (!order) return <div className="page"><div className="empty">ไม่พบเอกสาร {doc}</div></div>
   const c = M.customerOf(order.customer)
   const subtotal = M.orderTotal(order)

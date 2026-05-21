@@ -26,18 +26,14 @@ function ProductsList({ setRoute }) {
       if (v.length >= 2) lastPriceMove[sku] = ((v[v.length-1] - v[0]) / v[0]) * 100
     }
     return { sales, lastPriceMove, sparkVals }
-  }, [])
+  }, [M.orders])
 
   const mainNames = M.mainNames || { "01": "ODM", "02": "Service", "03": "Design", "04": "อื่นๆ" }
-  function mainOf(sku) {
-    const m = String(sku || "").match(/^FG-[^-]+-(\d{2})-/)
-    return m ? m[1] : null
-  }
 
   const hierarchy = React.useMemo(() => {
     const map = {}
     for (const p of M.products) {
-      const code = mainOf(p.sku)
+      const code = M.mainOf(p.sku)
       if (!code) continue
       if (!map[code]) map[code] = { code, name: mainNames[code] || code, count: 0, subs: {} }
       map[code].count += 1
@@ -51,32 +47,31 @@ function ProductsList({ setRoute }) {
           .sort((a, b) => b[1] - a[1])
           .map(([name, count]) => ({ name, count })),
       }))
-  }, [])
+  }, [M.products])
 
-  function matchesCategory(p) {
-    if (catSel.length === 0) return true
-    const main = mainOf(p.sku)
-    if (!main) return false
-    return catSel.some(tok => {
-      if (tok.startsWith("main:")) return tok === `main:${main}`
-      if (tok.startsWith("sub:")) return tok === `sub:${main}:${p.category || ""}`
-      return false
+  const { filtered, sorted } = React.useMemo(() => {
+    const ql = q.toLowerCase()
+    const filtered = M.products.filter(p => {
+      if (catSel.length > 0) {
+        const main = M.mainOf(p.sku)
+        if (!main) return false
+        if (!catSel.some(tok => tok === `main:${main}` || tok === `sub:${main}:${p.category || ""}`))
+          return false
+      }
+      if (q && !(
+        (p.name || "").toLowerCase().includes(ql) ||
+        (p.sku || "").toLowerCase().includes(ql) ||
+        (p.brand || "").toLowerCase().includes(ql)
+      )) return false
+      return true
     })
-  }
-
-  const filtered = M.products.filter(p =>
-    matchesCategory(p) &&
-    (!q ||
-      (p.name || "").toLowerCase().includes(q.toLowerCase()) ||
-      (p.sku || "").toLowerCase().includes(q.toLowerCase()) ||
-      (p.brand || "").toLowerCase().includes(q.toLowerCase()))
-  )
-
-  const sorted = [...filtered].sort((a, b) => {
-    const sa = cache.sales[a.sku] || 0, sb = cache.sales[b.sku] || 0
-    if (sa !== sb) return sb - sa
-    return (b.price || 0) - (a.price || 0)
-  })
+    const sorted = [...filtered].sort((a, b) => {
+      const sa = cache.sales[a.sku] || 0, sb = cache.sales[b.sku] || 0
+      if (sa !== sb) return sb - sa
+      return (b.price || 0) - (a.price || 0)
+    })
+    return { filtered, sorted }
+  }, [M.products, catSel, q, cache])
 
   const startIdx = (page - 1) * pageSize
   const shown = sorted.slice(startIdx, startIdx + pageSize)
@@ -212,8 +207,7 @@ function ProductDetail({ sku, setRoute, goBack, canGoBack }) {
                   {p.formula && <><dt>ชื่อสูตร</dt><dd style={{ wordBreak: "break-word" }}>{p.formula}</dd></>}
                   {p.category && <><dt>หมวดสินค้า</dt><dd>
                     {(() => {
-                      const m = String(p.sku || "").match(/^FG-[^-]+-(\d{2})-/)
-                      const code = m ? m[1] : null
+                      const code = M.mainOf(p.sku)
                       const mainName = code ? (M.mainNames?.[code] || code) : null
                       return (
                         <span className="badge">{mainName ? `${mainName} / ${p.category}` : p.category}</span>

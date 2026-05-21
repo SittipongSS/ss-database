@@ -8,7 +8,7 @@ const MOCK = (() => {
 
   // Mutable data — replaced by reload() when live Sheets data arrives
   let customers, products, orders, monthly, categories, mainNames;
-  let customerMap, productMap;
+  let customerMap, productMap, ordersByCustomer, orderMap;
   const today = "2026-05-21";
   const displayNameCache = {};
   const priceHistoryCache = {};
@@ -22,6 +22,13 @@ const MOCK = (() => {
     mainNames  = raw.mainNames  || RAW.mainNames;
     customerMap = Object.fromEntries(customers.map(c => [c.id, c]));
     productMap  = Object.fromEntries(products.map(p => [p.sku, p]));
+    // O(1) lookup indexes
+    orderMap = Object.fromEntries(orders.map(o => [o.doc, o]));
+    ordersByCustomer = {};
+    orders.forEach(o => {
+      if (!ordersByCustomer[o.customer]) ordersByCustomer[o.customer] = [];
+      ordersByCustomer[o.customer].push(o);
+    });
     customers.forEach(c => {
       if (!c.taxId) {
         let h = 0;
@@ -51,9 +58,14 @@ const MOCK = (() => {
 
   function productOf(sku) { return productMap[sku]; }
   function customerOf(id) { return customerMap[id]; }
+  function orderOf(doc) { return orderMap[doc] || null; }
   function orderTotal(o) { return (o.items || []).reduce((s, i) => s + (i.total || (i.qty * i.price) || 0), 0); }
   function orderQty(o) { return (o.items || []).reduce((s, i) => s + (i.qty || 0), 0); }
-  function ordersOf(customerId) { return orders.filter(o => o.customer === customerId); }
+  function ordersOf(customerId) { return ordersByCustomer[customerId] || []; }
+  function mainOf(sku) {
+    const m = String(sku || "").match(/^FG-[^-]+-(\d{2})-/);
+    return m ? m[1] : null;
+  }
   function ordersBySku(sku) {
     return orders.filter(o => o.items.some(i => i.sku === sku))
       .map(o => ({ ...o, items: o.items.filter(i => i.sku === sku) }));
@@ -151,7 +163,7 @@ const MOCK = (() => {
     get monthly()   { return monthly;   },
     get categories(){ return categories;},
     get mainNames() { return mainNames; },
-    productOf, customerOf, orderTotal, orderQty, ordersOf, ordersBySku,
+    productOf, customerOf, orderOf, orderTotal, orderQty, ordersOf, mainOf, ordersBySku,
     productDisplayName,
     thb, thbDec, num, dayDiff, lastOrderDate, customerLifetimeValue,
     fmtDate,
