@@ -92,18 +92,11 @@ function PeriodChips({ value, onChange, options = ["all", "month", "year"] }) {
   )
 }
 
-function KpiCard({ label, value, delta, deltaDir, sub, sparkValues }) {
+function KpiCard({ label, value, sub }) {
   return (
     <div className="stat">
       <div className="stat-label">{label}</div>
       <div className="stat-value">{value}</div>
-      {delta && (
-        <div className={"stat-delta " + (deltaDir || "flat")}>
-          {deltaDir === "up" && <Icon name="arrowUp" className="ico" style={{ width: 12, height: 12 }} />}
-          {deltaDir === "down" && <Icon name="arrowDown" className="ico" style={{ width: 12, height: 12 }} />}
-          {delta}
-        </div>
-      )}
       {sub && <div className="dim" style={{ fontSize: 11, marginTop: 4 }}>{sub}</div>}
     </div>
   )
@@ -303,8 +296,8 @@ function DashV1(props) {
   return (
     <>
       <div className="kpi-row">
-        <KpiCard label="ยอดขาย 12 เดือน" value={M.thb(totalRev)} delta={lastMonthYoY != null ? `${lastMonthYoY >= 0 ? "+" : ""}${lastMonthYoY.toFixed(1)}% YoY` : null} deltaDir={lastMonthYoY >= 0 ? "up" : "down"} />
-        <KpiCard label={`เดือนล่าสุด · ${lastMonthLabel}`} value={M.thb(lastMonth.rev)} delta={`${moMGrowth >= 0 ? "+" : ""}${moMGrowth.toFixed(1)}% MoM`} deltaDir={moMGrowth >= 0 ? "up" : "down"} />
+        <KpiCard label="ยอดขาย 12 เดือน" value={M.thb(totalRev)} />
+        <KpiCard label={`เดือนล่าสุด · ${lastMonthLabel}`} value={M.thb(lastMonth.rev)} />
         <OrdersKpiCard />
         <SalesKpiCard />
       </div>
@@ -350,11 +343,6 @@ function DashV2(props) {
           <div>
             <div className="stat-label">ยอดขายรวม 12 เดือน</div>
             <div style={{ fontSize: 42, fontWeight: 600, letterSpacing: "-0.03em", marginTop: 6 }}>{M.thb(totalRev)}</div>
-            {lastMonthYoY != null && (
-              <div className="stat-delta up" style={{ fontSize: 13, marginTop: 4 }}>
-                <Icon name={lastMonthYoY >= 0 ? "arrowUp" : "arrowDown"} className="ico" /> {lastMonthYoY >= 0 ? "+" : ""}{lastMonthYoY.toFixed(1)}% YoY
-              </div>
-            )}
           </div>
         </div>
         <OrdersKpiCard />
@@ -401,7 +389,7 @@ function DashV3(props) {
       <div className="kpi-row">
         <AlertCard count={pending} label="รอดำเนินการ" sub="Pending Orders" tone="amber" icon="clock" />
         <AlertCard count={shipped} label="พร้อมส่ง" sub="Ready to Ship" tone="blue" icon="package" />
-        <KpiCard label={`ยอดขายเดือนล่าสุด · ${lastMonthLabel}`} value={M.thb(lastMonth.rev)} delta={`${moMGrowth >= 0 ? "+" : ""}${moMGrowth.toFixed(1)}% MoM`} deltaDir={moMGrowth >= 0 ? "up" : "down"} />
+        <KpiCard label={`ยอดขายเดือนล่าสุด · ${lastMonthLabel}`} value={M.thb(lastMonth.rev)} />
         <OrdersKpiCard />
         <SalesKpiCard />
       </div>
