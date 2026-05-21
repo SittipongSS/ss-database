@@ -35,9 +35,21 @@ function App() {
 
   useEffect(() => {
     if (!SHEETS_URL) return
+    // Show cached data instantly on repeat visits
+    try {
+      const cached = localStorage.getItem('ss_data')
+      if (cached) { MOCK.reload(JSON.parse(cached)); forceUpdate(v => v + 1) }
+    } catch(e) {}
+    // Fetch fresh data in background
     fetch('/api/sheets')
       .then(r => r.json())
-      .then(data => { MOCK.reload(data); forceUpdate(v => v + 1) })
+      .then(data => {
+        if (data?.customers) {
+          MOCK.reload(data)
+          forceUpdate(v => v + 1)
+          try { localStorage.setItem('ss_data', JSON.stringify(data)) } catch(e) {}
+        }
+      })
       .catch(() => {})
   }, [])
 
