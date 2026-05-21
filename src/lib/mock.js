@@ -3,7 +3,8 @@
   // Mutable data — replaced by reload() when live Sheets data arrives
   let customers, products, orders, monthly, categories, mainNames;
   let customerMap, productMap, ordersByCustomer, orderMap;
-  const today = new Date().toISOString().slice(0, 10);
+  const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Bangkok' }).format(new Date());
+  let lastUpdated = null;
   const displayNameCache = {};
   const priceHistoryCache = {};
 
@@ -139,6 +140,7 @@
     return out.sort((a, b) => b.when.localeCompare(a.when)).slice(0, 8);
   }
   function reload(liveData) {
+    lastUpdated = new Date();
     // Merge into current live state so partial tab loads don't wipe other tabs
     _apply({
       customers,
@@ -165,7 +167,13 @@
     priceHistoryOf, skusWithPriceHistory, recentActivity,
     reload,
     today,
+    get lastUpdated() { return lastUpdated; },
   };
 })();
 
 export default MOCK;
+
+
+
+
+

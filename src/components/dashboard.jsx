@@ -454,7 +454,14 @@ export function Dashboard({ variant, setVariant, setRoute }) {
       <div className="page-head">
         <div>
           <h1 className="page-title">แดชบอร์ด · Overview</h1>
-          <p className="page-sub">วันที่ {M.fmtDate(M.today)} · ภาพรวมยอดขาย คำสั่งซื้อ และความเคลื่อนไหวล่าสุด</p>
+          <p className="page-sub">
+            วันที่ {M.fmtDate(M.today)} · ภาพรวมยอดขาย คำสั่งซื้อ และความเคลื่อนไหวล่าสุด
+            {M.lastUpdated && (
+              <span className="dim" style={{ marginLeft: 8 }}>
+                · อัพเดทล่าสุด {M.lastUpdated.toLocaleTimeString('th-TH', { timeZone: 'Asia/Bangkok', hour: '2-digit', minute: '2-digit' })} น.
+              </span>
+            )}
+          </p>
         </div>
         <div className="row" style={{ gap: 10 }}>
           <div className="variant-switch">
