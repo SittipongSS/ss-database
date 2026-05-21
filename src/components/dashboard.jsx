@@ -423,11 +423,11 @@ function DashV3(props) {
 
 export function Dashboard({ variant, setVariant, setRoute }) {
   const M = MOCK
-  const last12 = M.monthly.slice(-13, -1)
+  const last12 = M.monthly.slice(-12)
   const totalRev = last12.reduce((s, m) => s + m.rev, 0)
-  const prevYearRev = M.monthly.slice(-25, -13).reduce((s, m) => s + m.rev, 0)
-  const lastMonth = M.monthly[M.monthly.length - 2] || { m: "—", rev: 0 }
-  const prevMonth = M.monthly[M.monthly.length - 3]
+  const prevYearRev = M.monthly.slice(-24, -12).reduce((s, m) => s + m.rev, 0)
+  const lastMonth = M.monthly[M.monthly.length - 1] || { m: "—", rev: 0 }
+  const prevMonth = M.monthly[M.monthly.length - 2]
   const moMGrowth = prevMonth ? ((lastMonth.rev - prevMonth.rev) / prevMonth.rev) * 100 : 0
   const lastMonthYoY = (() => {
     if (!lastMonth.m || lastMonth.m === "—") return null
