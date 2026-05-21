@@ -2,13 +2,20 @@ import React from 'react'
 import MOCK from '../lib/mock.js'
 import { Icon } from './icons.jsx'
 import { LineChart } from './charts.jsx'
-import { StatusBadge, BackToList, Pagination } from './ui.jsx'
+import { StatusBadge, BackToList, Pagination, SortTh } from './ui.jsx'
 
 function CustomersList({ setRoute }) {
   const M = MOCK
   const [q, setQ] = React.useState("")
   const [page, setPage] = React.useState(1)
   const [pageSize, setPageSize] = React.useState(25)
+  const [sort, setSort] = React.useState({ col: "lifetime", dir: "desc" })
+
+  const toggleSort = (col) => {
+    const numCols = new Set(["ordersCount", "lifetime", "lastDate"])
+    setSort(s => s.col === col ? { col, dir: s.dir === "asc" ? "desc" : "asc" } : { col, dir: numCols.has(col) ? "desc" : "asc" })
+    setPage(1)
+  }
 
   const enriched = React.useMemo(() => M.customers.map(c => {
     const orders = M.ordersOf(c.id)
@@ -20,14 +27,26 @@ function CustomersList({ setRoute }) {
 
   const filtered = React.useMemo(() => {
     const ql = q.toLowerCase()
-    return enriched.filter(c =>
+    const f = enriched.filter(c =>
       !q ||
       (c.name || "").toLowerCase().includes(ql) ||
       (c.short || "").toLowerCase().includes(ql) ||
       (c.id || "").toLowerCase().includes(ql) ||
       (c.brand || "").toLowerCase().includes(ql)
-    ).sort((a, b) => b.lifetime - a.lifetime)
-  }, [enriched, q])
+    )
+    const mul = sort.dir === "asc" ? 1 : -1
+    return [...f].sort((a, b) => {
+      switch (sort.col) {
+        case "id":          return mul * (a.id || "").localeCompare(b.id || "")
+        case "name":        return mul * (a.name || "").localeCompare(b.name || "")
+        case "brand":       return mul * (a.brand || "").localeCompare(b.brand || "")
+        case "city":        return mul * (a.city || "").localeCompare(b.city || "")
+        case "ordersCount": return mul * ((a.ordersCount || 0) - (b.ordersCount || 0))
+        case "lastDate":    return mul * (a.lastDate || "").localeCompare(b.lastDate || "")
+        default:            return mul * ((a.lifetime || 0) - (b.lifetime || 0))
+      }
+    })
+  }, [enriched, q, sort])
 
   const startIdx = (page - 1) * pageSize
   const shown = filtered.slice(startIdx, startIdx + pageSize)
@@ -52,16 +71,17 @@ function CustomersList({ setRoute }) {
           <div className="spacer" />
           <span className="dim mono" style={{ fontSize: 12 }}>{M.num(shown.length)} / {M.num(filtered.length)}</span>
         </div>
+        <div className="tbl-scroll">
         <table className="tbl">
           <thead>
             <tr>
-              <th>รหัส</th>
-              <th>ชื่อลูกค้า</th>
-              <th>แบรนด์</th>
-              <th>จังหวัด</th>
-              <th className="num">ออเดอร์</th>
-              <th className="num">ยอดซื้อรวม</th>
-              <th>สั่งล่าสุด</th>
+              <SortTh col="id" sort={sort} onSort={toggleSort}>รหัส</SortTh>
+              <SortTh col="name" sort={sort} onSort={toggleSort}>ชื่อลูกค้า</SortTh>
+              <SortTh col="brand" sort={sort} onSort={toggleSort}>แบรนด์</SortTh>
+              <SortTh col="city" sort={sort} onSort={toggleSort}>จังหวัด</SortTh>
+              <SortTh col="ordersCount" sort={sort} onSort={toggleSort} className="num">ออเดอร์</SortTh>
+              <SortTh col="lifetime" sort={sort} onSort={toggleSort} className="num">ยอดซื้อรวม</SortTh>
+              <SortTh col="lastDate" sort={sort} onSort={toggleSort}>สั่งล่าสุด</SortTh>
             </tr>
           </thead>
           <tbody>
@@ -91,6 +111,7 @@ function CustomersList({ setRoute }) {
             ))}
           </tbody>
         </table>
+        </div>
         <Pagination
           total={filtered.length}
           page={page}

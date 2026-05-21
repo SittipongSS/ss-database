@@ -21,6 +21,20 @@ export function BackToList({ setRoute, target, label }) {
   )
 }
 
+export function SortTh({ col, sort, onSort, children, className }) {
+  const active = sort.col === col
+  return (
+    <th className={className} style={{ cursor: "pointer", userSelect: "none" }} onClick={() => onSort(col)}>
+      <span style={{ display: "inline-flex", alignItems: "center", gap: 3, whiteSpace: "nowrap" }}>
+        {children}
+        <span style={{ opacity: active ? 0.85 : 0.18, fontSize: 9, lineHeight: 1 }}>
+          {active && sort.dir === "asc" ? "↑" : "↓"}
+        </span>
+      </span>
+    </th>
+  )
+}
+
 export function Pagination({ total, page, pageSize, onPageChange, onPageSizeChange, sizes = [10, 25, 50] }) {
   const totalPages = Math.max(1, Math.ceil(total / pageSize))
   const cur = Math.min(Math.max(1, page), totalPages)

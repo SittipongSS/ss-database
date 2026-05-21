@@ -1,7 +1,7 @@
 import React from 'react'
 import MOCK from '../lib/mock.js'
 import { Icon } from './icons.jsx'
-import { StatusBadge, BackToList, Pagination } from './ui.jsx'
+import { StatusBadge, BackToList, Pagination, SortTh } from './ui.jsx'
 
 function OrdersList({ setRoute }) {
   const M = MOCK
@@ -12,6 +12,13 @@ function OrdersList({ setRoute }) {
   const [dateTo, setDateTo] = React.useState("")
   const [page, setPage] = React.useState(1)
   const [pageSize, setPageSize] = React.useState(25)
+  const [sort, setSort] = React.useState({ col: "date", dir: "desc" })
+
+  const toggleSort = (col) => {
+    const numCols = new Set(["date", "dueDate", "qty", "total"])
+    setSort(s => s.col === col ? { col, dir: s.dir === "asc" ? "desc" : "asc" } : { col, dir: numCols.has(col) ? "desc" : "asc" })
+    setPage(1)
+  }
 
   const statuses = ["all", "delivered", "shipped", "pending"]
   const labels = { all: "ทั้งหมด", delivered: "ส่งเรียบร้อย", shipped: "พร้อมส่ง", pending: "รอดำเนินการ" }
@@ -36,19 +43,34 @@ function OrdersList({ setRoute }) {
     return { from: p?.from || null, to: p?.to || null }
   }, [datePreset, dateFrom, dateTo])
 
-  const filtered = React.useMemo(() => M.orders.filter(o => {
-    if (status !== "all" && o.status !== status) return false
-    if (effective.from && o.date < effective.from) return false
-    if (effective.to && o.date > effective.to) return false
-    if (q) {
-      const ql = q.toLowerCase()
-      const c = M.customerOf(o.customer)
-      const hay = [o.doc, o.customer, c?.short, c?.name, ...o.items.map(i => i.sku)]
-        .filter(Boolean).join(" ").toLowerCase()
-      if (!hay.includes(ql)) return false
-    }
-    return true
-  }), [M.orders, M.customers, status, effective, q])
+  const filtered = React.useMemo(() => {
+    const f = M.orders.filter(o => {
+      if (status !== "all" && o.status !== status) return false
+      if (effective.from && o.date < effective.from) return false
+      if (effective.to && o.date > effective.to) return false
+      if (q) {
+        const ql = q.toLowerCase()
+        const c = M.customerOf(o.customer)
+        const hay = [o.doc, o.customer, c?.short, c?.name, ...o.items.map(i => i.sku)]
+          .filter(Boolean).join(" ").toLowerCase()
+        if (!hay.includes(ql)) return false
+      }
+      return true
+    })
+    const mul = sort.dir === "asc" ? 1 : -1
+    return [...f].sort((a, b) => {
+      switch (sort.col) {
+        case "doc":          return mul * (a.doc || "").localeCompare(b.doc || "")
+        case "dueDate":      return mul * (a.dueDate || "").localeCompare(b.dueDate || "")
+        case "customer":     return mul * (a.customer || "").localeCompare(b.customer || "")
+        case "customerName": return mul * ((a.customerName || M.customerOf(a.customer)?.name || "").localeCompare(b.customerName || M.customerOf(b.customer)?.name || ""))
+        case "qty":          return mul * (M.orderQty(a) - M.orderQty(b))
+        case "total":        return mul * (M.orderTotal(a) - M.orderTotal(b))
+        case "status":       return mul * (a.status || "").localeCompare(b.status || "")
+        default:             return mul * (a.date || "").localeCompare(b.date || "")
+      }
+    })
+  }, [M.orders, M.customers, status, effective, q, sort])
 
   return (
     <div className="page">
@@ -103,17 +125,18 @@ function OrdersList({ setRoute }) {
           )}
         </div>
 
+        <div className="tbl-scroll">
         <table className="tbl">
           <thead>
             <tr>
-              <th>เลขเอกสาร</th>
-              <th>วันที่สั่ง</th>
-              <th>กำหนดส่ง</th>
-              <th>รหัสลูกค้า</th>
-              <th>ชื่อลูกค้า</th>
-              <th className="num">จำนวน</th>
-              <th className="num">ยอดรวม</th>
-              <th>สถานะ</th>
+              <SortTh col="doc" sort={sort} onSort={toggleSort}>เลขเอกสาร</SortTh>
+              <SortTh col="date" sort={sort} onSort={toggleSort}>วันที่สั่ง</SortTh>
+              <SortTh col="dueDate" sort={sort} onSort={toggleSort}>กำหนดส่ง</SortTh>
+              <SortTh col="customer" sort={sort} onSort={toggleSort}>รหัสลูกค้า</SortTh>
+              <SortTh col="customerName" sort={sort} onSort={toggleSort}>ชื่อลูกค้า</SortTh>
+              <SortTh col="qty" sort={sort} onSort={toggleSort} className="num">จำนวน</SortTh>
+              <SortTh col="total" sort={sort} onSort={toggleSort} className="num">ยอดรวม</SortTh>
+              <SortTh col="status" sort={sort} onSort={toggleSort}>สถานะ</SortTh>
             </tr>
           </thead>
           <tbody>
@@ -138,6 +161,7 @@ function OrdersList({ setRoute }) {
             })}
           </tbody>
         </table>
+        </div>
         <Pagination
           total={filtered.length}
           page={page}

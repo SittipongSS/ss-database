@@ -2,8 +2,8 @@ import React from 'react'
 import { createPortal } from 'react-dom'
 import MOCK from '../lib/mock.js'
 import { Icon } from './icons.jsx'
-import { LineChart } from './charts.jsx'
-import { StatusBadge, BackToList, Pagination } from './ui.jsx'
+import { LineChart, fmtChartDate } from './charts.jsx'
+import { StatusBadge, BackToList, Pagination, SortTh } from './ui.jsx'
 
 function ProductsList({ setRoute }) {
   const M = MOCK
@@ -11,6 +11,12 @@ function ProductsList({ setRoute }) {
   const [q, setQ] = React.useState("")
   const [page, setPage] = React.useState(1)
   const [pageSize, setPageSize] = React.useState(25)
+  const [sort, setSort] = React.useState({ col: null, dir: "desc" }) // null = default by sales
+
+  const toggleSort = (col) => {
+    setSort(s => s.col === col ? { col, dir: s.dir === "asc" ? "desc" : "asc" } : { col, dir: col === "price" ? "desc" : "asc" })
+    setPage(1)
+  }
 
   const cache = React.useMemo(() => {
     const sales = {}, lastPriceMove = {}, sparkVals = {}, latestPrices = {}
@@ -67,12 +73,22 @@ function ProductsList({ setRoute }) {
       return true
     })
     const sorted = [...filtered].sort((a, b) => {
-      const sa = cache.sales[a.sku] || 0, sb = cache.sales[b.sku] || 0
-      if (sa !== sb) return sb - sa
-      return (b.price || 0) - (a.price || 0)
+      if (!sort.col) {
+        const sa = cache.sales[a.sku] || 0, sb = cache.sales[b.sku] || 0
+        if (sa !== sb) return sb - sa
+        return (b.price || 0) - (a.price || 0)
+      }
+      const mul = sort.dir === "asc" ? 1 : -1
+      switch (sort.col) {
+        case "sku":      return mul * (a.sku || "").localeCompare(b.sku || "")
+        case "name":     return mul * (a.name || a.formula || "").localeCompare(b.name || b.formula || "")
+        case "category": return mul * (a.category || "").localeCompare(b.category || "")
+        case "price":    return mul * ((cache.latestPrices[a.sku] || a.price || 0) - (cache.latestPrices[b.sku] || b.price || 0))
+        default: return 0
+      }
     })
     return { filtered, sorted }
-  }, [M.products, catSel, q, cache])
+  }, [M.products, catSel, q, cache, sort])
 
   const startIdx = (page - 1) * pageSize
   const shown = sorted.slice(startIdx, startIdx + pageSize)
@@ -102,13 +118,14 @@ function ProductsList({ setRoute }) {
           <div className="spacer" />
           <span className="dim mono" style={{ fontSize: 12 }}>{M.num(shown.length)} / {M.num(sorted.length)}</span>
         </div>
+        <div className="tbl-scroll">
         <table className="tbl">
           <thead>
             <tr>
-              <th>รหัส SKU</th>
-              <th>ชื่อสินค้า / สูตร</th>
-              <th>หมวด</th>
-              <th className="num">ราคา</th>
+              <SortTh col="sku" sort={sort} onSort={toggleSort}>รหัส SKU</SortTh>
+              <SortTh col="name" sort={sort} onSort={toggleSort}>ชื่อสินค้า / สูตร</SortTh>
+              <SortTh col="category" sort={sort} onSort={toggleSort}>หมวด</SortTh>
+              <SortTh col="price" sort={sort} onSort={toggleSort} className="num">ราคา</SortTh>
             </tr>
           </thead>
           <tbody>
@@ -132,6 +149,7 @@ function ProductsList({ setRoute }) {
             })}
           </tbody>
         </table>
+        </div>
         <Pagination
           total={sorted.length}
           page={page}
@@ -161,7 +179,7 @@ function ProductDetail({ sku, setRoute, goBack, canGoBack }) {
   const latestPrice = history.length > 0 ? history[history.length - 1].price : p.price
   const latestPriceDate = history.length > 0 ? history[history.length - 1].date : null
 
-  const chartData = history.map(h => ({ x: h.date.slice(2), y: h.price }))
+  const chartData = history.map(h => ({ x: h.date, y: h.price }))
   const minPrice = history.length ? Math.min(...history.map(h => h.price)) : null
   const maxPrice = history.length ? Math.max(...history.map(h => h.price)) : null
   const avgPrice = history.length ? history.reduce((s,h) => s + h.price, 0) / history.length : null
@@ -238,7 +256,7 @@ function ProductDetail({ sku, setRoute, goBack, canGoBack }) {
                     <span className="more" style={{ cursor: "pointer" }} onClick={() => setTab("price")}>ดูทั้งหมด</span>
                   </div>
                   <div className="chart-wrap">
-                    <LineChart data={chartData} height={200} formatY={v => "฿" + v.toFixed(v >= 100 ? 0 : 2)} />
+                    <LineChart data={chartData} height={200} formatY={v => "฿" + v.toFixed(v >= 100 ? 0 : 2)} formatX={fmtChartDate} />
                   </div>
                 </div>
               )}
@@ -254,7 +272,7 @@ function ProductDetail({ sku, setRoute, goBack, canGoBack }) {
                 </div>
                 <div className="chart-wrap">
                   {chartData.length >= 2
-                    ? <LineChart data={chartData} height={260} formatY={v => "฿" + v.toFixed(v >= 100 ? 0 : 2)} />
+                    ? <LineChart data={chartData} height={260} formatY={v => "฿" + v.toFixed(v >= 100 ? 0 : 2)} formatX={fmtChartDate} />
                     : <div className="empty">ยังไม่มีประวัติราคาเพียงพอ</div>}
                 </div>
               </div>

@@ -303,7 +303,7 @@ button { font-family: inherit; }
 .tbl tbody tr:last-child td { border-bottom: none; }
 
 .table-wrap { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
-.table-wrap > .tbl thead th { background: var(--panel); border-bottom: 1px solid var(--border); border-top: none; }
+.table-wrap .tbl thead th { background: var(--panel); border-bottom: 1px solid var(--border); border-top: none; }
 
 /* Toolbar */
 .toolbar { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
@@ -373,8 +373,9 @@ button { font-family: inherit; }
 .kv-list dd { margin: 0; color: var(--text); font-variant-numeric: tabular-nums; min-width: 0; word-break: break-word; overflow-wrap: anywhere; }
 
 /* Tabs */
-.tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 18px; }
-.tab { padding: 8px 14px; font-size: 13px; color: var(--text-2); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+.tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 18px; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+.tabs::-webkit-scrollbar { display: none; }
+.tab { padding: 8px 14px; font-size: 13px; color: var(--text-2); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; white-space: nowrap; flex-shrink: 0; }
 .tab:hover { color: var(--text); }
 .tab.active { color: var(--text); border-color: var(--text); font-weight: 500; }
 
@@ -399,7 +400,7 @@ button { font-family: inherit; }
 .muted { color: var(--text-2); }
 .dim { color: var(--text-3); }
 .row { display: flex; align-items: center; gap: var(--gap); }
-.tbl-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.tbl-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: thin; }
 .row-between { display: flex; align-items: center; justify-content: space-between; gap: var(--gap); }
 .scroll-x { overflow-x: auto; }
 .hr { height: 1px; background: var(--border); border: none; margin: 16px 0; }
@@ -429,6 +430,11 @@ button { font-family: inherit; }
   .page-title { font-size: 20px; }
   .topbar { padding: 0 14px; gap: 12px; }
   .search-bar { max-width: 320px; }
+  /* Toolbar scrolls horizontally at tablet+, no wrap */
+  .toolbar { overflow-x: auto; -webkit-overflow-scrolling: touch; flex-wrap: nowrap; scrollbar-width: none; }
+  .toolbar::-webkit-scrollbar { display: none; }
+  .toolbar .spacer { display: none; }
+  .filter-chip { white-space: nowrap; flex-shrink: 0; }
   .app { grid-template-columns: 1fr !important; }
   .sidebar { position: fixed; top: 0; left: 0; width: 260px; height: 100vh; z-index: 50; transform: translateX(-100%); transition: transform 0.25s ease; box-shadow: 0 0 0 1px var(--border), 8px 0 24px rgba(0,0,0,0.08); }
   [data-mobile-open="true"] .sidebar { transform: translateX(0); }
@@ -467,9 +473,8 @@ button { font-family: inherit; }
   .topbar { padding: 0 12px; gap: 8px; }
 
   /* Tables — make every table scroll horizontally */
-  .tbl { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .tbl { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: thin; }
   .tbl th, .tbl td { padding: 0 10px; font-size: 12.5px; white-space: nowrap; }
-  .table-wrap { overflow-x: auto !important; }
 
   /* Toolbar — single scrollable row, no wrapping */
   .toolbar { gap: 6px; overflow-x: auto; -webkit-overflow-scrolling: touch; padding: 8px 10px; flex-wrap: nowrap; }
@@ -477,6 +482,8 @@ button { font-family: inherit; }
   .toolbar > span { white-space: nowrap; flex-shrink: 0; }
   .toolbar > svg, .toolbar .ico { flex-shrink: 0; }
   .filter-chip { white-space: nowrap; flex-shrink: 0; }
+  /* Keep toolbar search visible (unlike topbar search which hides on mobile) */
+  .toolbar .search-bar { display: flex; min-width: 160px; flex-shrink: 1; }
 
   /* Cards */
   .card-head { padding: 10px 14px; gap: 6px; }
@@ -509,10 +516,6 @@ button { font-family: inherit; }
 
   /* KV list */
   .kv-list { grid-template-columns: minmax(0, auto) minmax(0, 1fr); gap: 8px 12px; }
-
-  /* Tabs */
-  .tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-  .tab { white-space: nowrap; flex-shrink: 0; }
 
   /* Pagination — stack on very small */
   .pagination { gap: 8px; padding: 8px 12px; }

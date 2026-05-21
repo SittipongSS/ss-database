@@ -1,5 +1,14 @@
 import React from 'react'
 
+// DD/MM/YY (Buddhist era) — compact chart axis label
+export function fmtChartDate(iso) {
+  if (!iso) return ''
+  const m = String(iso).match(/^(\d{4})-(\d{2})-(\d{2})/)
+  if (!m) return String(iso).slice(0, 8)
+  const yy = String((+m[1] + 543) % 100).padStart(2, '0')
+  return `${+m[3]}/${+m[2]}/${yy}`
+}
+
 export function LineChart({ data, height = 220, accentColor = "var(--accent)", showGrid = true, formatY, formatX }) {
   if (!data || data.length === 0) return null
   const W = 800, H = height, PADL = 64, PADR = 20, PADT = 16, PADB = 28
@@ -33,7 +42,8 @@ export function LineChart({ data, height = 220, accentColor = "var(--accent)", s
         <circle key={i} cx={xScale(i)} cy={yScale(d.y)} r="2.5" fill="var(--panel)" stroke={accentColor} strokeWidth="1.5" />
       ))}
       {data.map((d, i) => {
-        if (data.length > 8 && i % Math.ceil(data.length / 8) !== 0 && i !== data.length - 1) return null
+        const step = Math.max(1, Math.ceil(data.length / 6))
+        if (i % step !== 0) return null
         return <text key={i} x={xScale(i)} y={H - 10} fill="var(--text-3)" fontSize="10" textAnchor="middle" fontFamily="var(--font-mono)">{formatX ? formatX(d.x, i) : d.x}</text>
       })}
     </svg>

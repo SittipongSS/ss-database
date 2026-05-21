@@ -1,7 +1,7 @@
 import React from 'react'
 import MOCK from '../lib/mock.js'
 import { Icon } from './icons.jsx'
-import { LineChart } from './charts.jsx'
+import { LineChart, fmtChartDate } from './charts.jsx'
 import { StatusBadge } from './ui.jsx'
 
 function Tracking({ initialQuery, setRoute }) {
@@ -196,7 +196,7 @@ function Highlight(text, q) {
 
 function PriceHistoryPage({ initialSku, setRoute }) {
   const M = MOCK
-  const skusWithHistory = React.useMemo(() => M.skusWithPriceHistory(), [])
+  const skusWithHistory = React.useMemo(() => M.skusWithPriceHistory(), [M.orders])
   const [selected, setSelected] = React.useState(initialSku && skusWithHistory.includes(initialSku) ? initialSku : skusWithHistory[0])
   const [q, setQ] = React.useState("")
 
@@ -211,7 +211,7 @@ function PriceHistoryPage({ initialSku, setRoute }) {
 
   const p = M.productOf(selected)
   const history = selected ? M.priceHistoryOf(selected) : []
-  const chartData = history.map(h => ({ x: h.date.slice(2), y: h.price, raw: h }))
+  const chartData = history.map(h => ({ x: h.date, y: h.price, raw: h }))
   const distinctChanges = []
   for (let i = 0; i < history.length; i++) {
     if (i === 0 || history[i].price !== history[i-1].price) distinctChanges.push(history[i])
@@ -280,7 +280,7 @@ function PriceHistoryPage({ initialSku, setRoute }) {
             </div>
             <div className="chart-wrap">
               {chartData.length >= 2
-                ? <LineChart data={chartData} height={260} formatY={v => "฿" + v.toFixed(v >= 100 ? 0 : 2)} />
+                ? <LineChart data={chartData} height={260} formatY={v => "฿" + v.toFixed(v >= 100 ? 0 : 2)} formatX={fmtChartDate} />
                 : <div className="empty">ยังไม่มีประวัติราคาเพียงพอ</div>}
             </div>
           </div>
