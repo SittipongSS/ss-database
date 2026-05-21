@@ -292,12 +292,12 @@ function PriceChangesCard({ items, setRoute }) {
 }
 
 function DashV1(props) {
-  const { M, totalRev, lastMonth, lastMonthLabel, moMGrowth, lastMonthYoY, recentOrders, setRoute } = props
+  const { M, totalRev, prevYearRev, lastMonth, lastMonthLabel, prevMonth, recentOrders, setRoute } = props
   return (
     <>
       <div className="kpi-row">
-        <KpiCard label="ยอดขาย 12 เดือน" value={M.thb(totalRev)} />
-        <KpiCard label={`เดือนล่าสุด · ${lastMonthLabel}`} value={M.thb(lastMonth.rev)} />
+        <KpiCard label="ยอดขาย 12 เดือน" value={M.thb(totalRev)} sub={prevYearRev ? `vs ปีก่อน ${M.thb(prevYearRev)}` : null} />
+        <KpiCard label={`เดือนล่าสุด · ${lastMonthLabel}`} value={M.thb(lastMonth.rev)} sub={prevMonth ? `vs เดือนก่อน ${M.thb(prevMonth.rev)}` : null} />
         <OrdersKpiCard />
         <SalesKpiCard />
       </div>
@@ -335,7 +335,7 @@ function DashV1(props) {
 }
 
 function DashV2(props) {
-  const { M, totalRev, lastMonthYoY, lastMonthLabel, recentOrders, setRoute } = props
+  const { M, totalRev, prevYearRev, lastMonthLabel, recentOrders, setRoute } = props
   return (
     <>
       <div className="grid dash-hero-grid" style={{ marginBottom: 20 }}>
@@ -343,6 +343,7 @@ function DashV2(props) {
           <div>
             <div className="stat-label">ยอดขายรวม 12 เดือน</div>
             <div style={{ fontSize: 42, fontWeight: 600, letterSpacing: "-0.03em", marginTop: 6 }}>{M.thb(totalRev)}</div>
+            {prevYearRev > 0 && <div className="dim" style={{ fontSize: 11, marginTop: 6 }}>vs ปีก่อน {M.thb(prevYearRev)}</div>}
           </div>
         </div>
         <OrdersKpiCard />
@@ -381,7 +382,7 @@ function DashV2(props) {
 }
 
 function DashV3(props) {
-  const { M, lastMonth, lastMonthLabel, moMGrowth, priceChanges, inactive, recentOrders, setRoute } = props
+  const { M, lastMonth, lastMonthLabel, prevMonth, priceChanges, inactive, recentOrders, setRoute } = props
   const pending = M.orders.filter(o => o.status === "pending").length
   const shipped = M.orders.filter(o => o.status === "shipped").length
   return (
@@ -389,7 +390,7 @@ function DashV3(props) {
       <div className="kpi-row">
         <AlertCard count={pending} label="รอดำเนินการ" sub="Pending Orders" tone="amber" icon="clock" />
         <AlertCard count={shipped} label="พร้อมส่ง" sub="Ready to Ship" tone="blue" icon="package" />
-        <KpiCard label={`ยอดขายเดือนล่าสุด · ${lastMonthLabel}`} value={M.thb(lastMonth.rev)} />
+        <KpiCard label={`ยอดขายเดือนล่าสุด · ${lastMonthLabel}`} value={M.thb(lastMonth.rev)} sub={prevMonth ? `vs เดือนก่อน ${M.thb(prevMonth.rev)}` : null} />
         <OrdersKpiCard />
         <SalesKpiCard />
       </div>
@@ -424,6 +425,7 @@ export function Dashboard({ variant, setVariant, setRoute }) {
   const M = MOCK
   const last12 = M.monthly.slice(-13, -1)
   const totalRev = last12.reduce((s, m) => s + m.rev, 0)
+  const prevYearRev = M.monthly.slice(-25, -13).reduce((s, m) => s + m.rev, 0)
   const lastMonth = M.monthly[M.monthly.length - 2] || { m: "—", rev: 0 }
   const prevMonth = M.monthly[M.monthly.length - 3]
   const moMGrowth = prevMonth ? ((lastMonth.rev - prevMonth.rev) / prevMonth.rev) * 100 : 0
@@ -462,9 +464,9 @@ export function Dashboard({ variant, setVariant, setRoute }) {
           </div>
         </div>
       </div>
-      {variant === "v1" && <DashV1 {...{ M, totalRev, lastMonth, lastMonthLabel, moMGrowth, lastMonthYoY, orderCount, avgOrder, recentOrders, setRoute }} />}
-      {variant === "v2" && <DashV2 {...{ M, totalRev, lastMonthYoY, lastMonthLabel, recentOrders, setRoute }} />}
-      {variant === "v3" && <DashV3 {...{ M, lastMonth, lastMonthLabel, moMGrowth, priceChanges, inactive, recentOrders, setRoute }} />}
+      {variant === "v1" && <DashV1 {...{ M, totalRev, prevYearRev, lastMonth, lastMonthLabel, prevMonth, recentOrders, setRoute }} />}
+      {variant === "v2" && <DashV2 {...{ M, totalRev, prevYearRev, lastMonthLabel, recentOrders, setRoute }} />}
+      {variant === "v3" && <DashV3 {...{ M, lastMonth, lastMonthLabel, prevMonth, priceChanges, inactive, recentOrders, setRoute }} />}
     </div>
   )
 }
