@@ -314,9 +314,9 @@ function DashV1(props) {
   return (
     <>
       <div className="kpi-row">
-        <ShipStatusCard />
-        <OrdersKpiCard />
         <SalesKpiCard />
+        <OrdersKpiCard />
+        <ShipStatusCard />
       </div>
       <div className="grid grid-2" style={{ marginBottom: 20 }}>
         <TopCategoriesCard setRoute={setRoute} />
@@ -402,7 +402,6 @@ function DashV3(props) {
         <AlertCard count={pending} label="รอดำเนินการ" sub="Pending Orders" tone="amber" icon="clock" />
         <AlertCard count={shipped} label="พร้อมส่ง" sub="Ready to Ship" tone="blue" icon="package" />
         <OrdersKpiCard />
-        <SalesKpiCard />
       </div>
       <OrdersTrendChart />
       <div className="card">
