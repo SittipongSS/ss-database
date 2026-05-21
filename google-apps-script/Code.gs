@@ -64,11 +64,18 @@ function doGet(e) {
 
 function fmtDate(v) {
   if (!v) return null;
+  var d;
   if (v instanceof Date) {
-    return Utilities.formatDate(v, 'Asia/Bangkok', 'yyyy-MM-dd');
+    d = v;
+  } else {
+    var s = String(v).trim();
+    if (!s) return null;
+    // Try YYYY-MM-DD directly
+    if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0, 10);
+    d = new Date(s);
+    if (isNaN(d.getTime())) return null;
   }
-  var s = String(v).trim().slice(0, 10);
-  return s.length >= 8 ? s : null;
+  return Utilities.formatDate(d, 'Asia/Bangkok', 'yyyy-MM-dd');
 }
 
 function mapStatus(s) {
