@@ -10,7 +10,7 @@
  *   K=ปริมาตร  L=จำนวน  M=ราคา/หน่วย  N=มูลค่า  O=กำหนดส่ง  Q=สถานะ
  */
 
-var SHEET_NAME = 'รายการสั่งผลิต';
+var SHEET_NAME = 'RAW_รายการสั่งผลิต';
 var DATA_START_ROW = 4;   // row 4 = first data row
 var NUM_COLS = 17;         // A–Q
 
