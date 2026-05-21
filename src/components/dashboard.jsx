@@ -178,6 +178,109 @@ function ShipStatusCard() {
   )
 }
 
+function YoYCard() {
+  const M = MOCK
+  const [period, setPeriod] = React.useState("month")
+  const { current, previous, label } = React.useMemo(() => {
+    const now = new Date(M.today)
+    const curYear = now.getFullYear()
+    const curMonth = String(now.getMonth() + 1).padStart(2, '0')
+    const curYM = `${curYear}-${curMonth}`
+    const prevYM = `${curYear - 1}-${curMonth}`
+    if (period === "month") {
+      const cur  = M.monthly.find(m => m.m === curYM)?.rev  || 0
+      const prev = M.monthly.find(m => m.m === prevYM)?.rev || 0
+      return { current: cur, previous: prev, label: `${TH_MONTHS[+curMonth - 1]} ปีนี้ vs ปีก่อน` }
+    }
+    const cur  = M.monthly.filter(m => m.m.startsWith(String(curYear))).reduce((s, m) => s + m.rev, 0)
+    const prev = M.monthly.filter(m => m.m.startsWith(String(curYear - 1))).reduce((s, m) => s + m.rev, 0)
+    return { current: cur, previous: prev, label: `${curYear + 543} vs ${curYear - 1 + 543}` }
+  }, [period, M.monthly, M.today])
+  const pct = previous ? (current - previous) / previous * 100 : null
+  return (
+    <div className="stat">
+      <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 6, marginBottom: 6 }}>
+        <div className="stat-label" style={{ margin: 0 }}>การเติบโต · YoY</div>
+        <PeriodChips value={period} onChange={setPeriod} options={["month", "year"]} />
+      </div>
+      <div className="stat-value" style={{ color: pct === null ? undefined : pct >= 0 ? "var(--green)" : "var(--red)" }}>
+        {pct !== null ? `${pct >= 0 ? "+" : ""}${pct.toFixed(1)}%` : "—"}
+      </div>
+      <div className="dim" style={{ fontSize: 11, marginTop: 4 }}>{label}</div>
+      <div className="dim" style={{ fontSize: 11, marginTop: 2 }}>
+        {current ? `ปีนี้ ${M.thb(current)}` : "ปีนี้ —"}
+        {previous ? ` · ปีก่อน ${M.thb(previous)}` : " · ปีก่อน —"}
+      </div>
+    </div>
+  )
+}
+
+function MonthlyRevenueChart() {
+  const M = MOCK
+  const data = M.monthly.slice(-12).map((m, i, arr) => {
+    const [y, mo] = m.m.split("-")
+    return { x: `${TH_MONTHS[+mo - 1]} ${String((+y + 543) % 100).padStart(2, "0")}`, y: m.rev, highlight: i === arr.length - 1 }
+  })
+  const total = data.reduce((s, d) => s + d.y, 0)
+  return (
+    <div className="card" style={{ marginBottom: 20 }}>
+      <div className="card-head">
+        <h3>ยอดขายรายเดือน · Monthly Revenue</h3>
+      </div>
+      <div className="chart-wrap">
+        {data.length === 0 ? <div className="empty">ไม่มีข้อมูล</div> : <BarChart data={data} height={240} valueLabels />}
+      </div>
+      <div className="dim" style={{ padding: "10px 18px", fontSize: 11, borderTop: "1px solid var(--border)" }}>
+        รวม 12 เดือนล่าสุด {M.thb(total)}
+      </div>
+    </div>
+  )
+}
+
+function TopProductsByRevenueCard({ setRoute }) {
+  const M = MOCK
+  const [period, setPeriod] = React.useState("all")
+  const items = React.useMemo(() => {
+    const src = filterOrdersByPeriod(M.orders, period, M.today)
+    const totals = {}
+    for (const o of src) for (const it of o.items) {
+      totals[it.sku] = (totals[it.sku] || 0) + (it.total || it.qty * it.price || 0)
+    }
+    return Object.entries(totals)
+      .map(([sku, total]) => ({ sku, total, product: M.productOf(sku) }))
+      .sort((a, b) => b.total - a.total)
+      .slice(0, 5)
+  }, [period])
+  const max = items[0]?.total || 1
+  return (
+    <div className="card">
+      <div className="card-head">
+        <h3>สินค้าขายดี · Top Products</h3>
+        <PeriodChips value={period} onChange={setPeriod} options={["all", "month", "year"]} />
+      </div>
+      <div className="dim" style={{ padding: "8px 18px 0", fontSize: 11 }}>{periodLabel(period, M.today)}</div>
+      {items.length === 0 ? <div className="empty">ไม่มีข้อมูลในช่วงเวลานี้</div> : (
+        <div style={{ padding: "8px 0" }}>
+          {items.map((it, i) => (
+            <div key={it.sku} style={{ padding: "10px 18px", borderBottom: i < items.length - 1 ? "1px solid var(--border)" : "none", cursor: "pointer" }} onClick={() => setRoute("products:" + it.sku)}>
+              <div style={{ display: "flex", justifyContent: "space-between", gap: 12, marginBottom: 6 }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 13, fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{it.product?.name || it.sku}</div>
+                  <div className="mono dim" style={{ fontSize: 11, marginTop: 1 }}>{it.sku}</div>
+                </div>
+                <div className="mono" style={{ fontWeight: 500 }}>{M.thb(it.total)}</div>
+              </div>
+              <div style={{ height: 4, background: "var(--panel-2)", borderRadius: 2, overflow: "hidden" }}>
+                <div style={{ height: "100%", width: `${(it.total / max) * 100}%`, background: "var(--accent)" }} />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 function OrdersTrendChart() {
   const M = MOCK
   const [period, setPeriod] = React.useState("month")
@@ -352,41 +455,17 @@ function DashV1(props) {
 }
 
 function DashV2(props) {
-  const { M, recentOrders, setRoute } = props
+  const { setRoute } = props
   return (
     <>
       <div className="kpi-row">
+        <YoYCard />
         <SalesKpiCard />
-        <OrdersKpiCard />
       </div>
+      <MonthlyRevenueChart />
       <div className="grid grid-2" style={{ marginBottom: 20 }}>
-        <TopCategoriesCard setRoute={setRoute} />
+        <TopProductsByRevenueCard setRoute={setRoute} />
         <TopCustomersCard setRoute={setRoute} />
-      </div>
-      <div className="card">
-        <div className="card-head">
-          <h3>คำสั่งซื้อล่าสุด · Recent Orders</h3>
-          <span className="more" style={{ cursor: "pointer" }} onClick={() => setRoute("orders")}>ดูทั้งหมด</span>
-        </div>
-        <div className="tbl-scroll">
-        <table className="tbl">
-          <thead><tr><th>เลขเอกสาร</th><th>วันที่</th><th>ลูกค้า</th><th className="num">ยอดรวม</th><th>สถานะ</th></tr></thead>
-          <tbody>
-            {recentOrders.slice(0, 5).map(o => {
-              const c = M.customerOf(o.customer)
-              return (
-                <tr key={o.doc} onClick={() => setRoute("orders:" + o.doc)}>
-                  <td className="code">{o.doc}</td>
-                  <td>{M.fmtDate(o.date)}</td>
-                  <td>{c?.name}</td>
-                  <td className="num"><strong>{M.thb(M.orderTotal(o))}</strong></td>
-                  <td><StatusBadge status={o.status} /></td>
-                </tr>
-              )
-            })}
-          </tbody>
-        </table>
-        </div>
       </div>
     </>
   )
