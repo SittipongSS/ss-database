@@ -380,13 +380,7 @@ function DashV2(props) {
   return (
     <>
       <div className="grid dash-hero-grid" style={{ marginBottom: 20 }}>
-        <div className="card card-pad" style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", minHeight: 180 }}>
-          <div>
-            <div className="stat-label">ยอดขายรวม 12 เดือน</div>
-            <div style={{ fontSize: 42, fontWeight: 600, letterSpacing: "-0.03em", marginTop: 6 }}>{M.thb(totalRev)}</div>
-            {prevYearRev > 0 && <div className="dim" style={{ fontSize: 11, marginTop: 6 }}>vs ปีก่อน {M.thb(prevYearRev)}</div>}
-          </div>
-        </div>
+        <SalesKpiCard />
         <OrdersKpiCard />
       </div>
       <div className="grid grid-2" style={{ marginBottom: 20 }}>
