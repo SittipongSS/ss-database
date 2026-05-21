@@ -256,7 +256,7 @@ function InvoiceDetail({ doc, setRoute, goBack, canGoBack }) {
                   <td className="dim">{i + 1}</td>
                   <td className="code">{it.sku}</td>
                   <td>
-                    <div>{p?.name || it.formula || it.sku}</div>
+                    <div>{it.formula || p?.name || it.sku}</div>
                   </td>
                   <td className="num">{M.num(it.qty)}</td>
                   <td className="dim">{p?.uom}</td>
