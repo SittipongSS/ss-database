@@ -13,10 +13,11 @@ function ProductsList({ setRoute }) {
   const [pageSize, setPageSize] = React.useState(25)
 
   const cache = React.useMemo(() => {
-    const sales = {}, lastPriceMove = {}, sparkVals = {}
-    for (const o of M.orders) {
+    const sales = {}, lastPriceMove = {}, sparkVals = {}, latestPrices = {}
+    for (const o of M.orders) {          // orders sorted newest-first
       for (const it of o.items) {
         sales[it.sku] = (sales[it.sku] || 0) + (it.qty || 0)
+        if (it.price && !latestPrices[it.sku]) latestPrices[it.sku] = it.price  // first = newest
         if (!sparkVals[it.sku]) sparkVals[it.sku] = []
         if (it.price) sparkVals[it.sku].push(it.price)
       }
@@ -25,7 +26,7 @@ function ProductsList({ setRoute }) {
       const v = sparkVals[sku]
       if (v.length >= 2) lastPriceMove[sku] = ((v[v.length-1] - v[0]) / v[0]) * 100
     }
-    return { sales, lastPriceMove, sparkVals }
+    return { sales, lastPriceMove, sparkVals, latestPrices }
   }, [M.orders])
 
   const mainNames = M.mainNames || { "01": "ODM", "02": "Service", "03": "Design", "04": "อื่นๆ" }
@@ -114,6 +115,7 @@ function ProductsList({ setRoute }) {
             {shown.map(p => {
               const displayName = M.productDisplayName(p.sku)
               const showFormula = p.formula && p.formula !== displayName
+              const latestPrice = cache.latestPrices[p.sku] || p.price
               return (
                 <tr key={p.sku} onClick={() => setRoute("products:" + p.sku)}>
                   <td className="code">{p.sku}</td>
@@ -123,7 +125,7 @@ function ProductsList({ setRoute }) {
                   </td>
                   <td>{p.category ? <span className="badge">{p.category}</span> : <span className="dim">—</span>}</td>
                   <td className="num">
-                    {p.price ? <><strong>{M.thb(p.price)}</strong> <span className="dim mono" style={{ fontSize: 11 }}>/ {p.uom}</span></> : <span className="dim">—</span>}
+                    {latestPrice ? <><strong>{M.thb(latestPrice)}</strong> <span className="dim mono" style={{ fontSize: 11 }}>/ {p.uom}</span></> : <span className="dim">—</span>}
                   </td>
                 </tr>
               )
@@ -155,6 +157,10 @@ function ProductDetail({ sku, setRoute, goBack, canGoBack }) {
   const totalSold = ordersOfSku.reduce((s, o) => s + o.items.reduce((ss, i) => ss + (i.qty || 0), 0), 0)
   const totalRev = ordersOfSku.reduce((s, o) => s + o.items.reduce((ss, i) => ss + (i.total || i.qty * i.price || 0), 0), 0)
 
+  // ราคาล่าสุดจาก order history (history เรียง asc → ตัวท้ายสุด = ล่าสุด)
+  const latestPrice = history.length > 0 ? history[history.length - 1].price : p.price
+  const latestPriceDate = history.length > 0 ? history[history.length - 1].date : null
+
   const chartData = history.map(h => ({ x: h.date.slice(2), y: h.price }))
   const minPrice = history.length ? Math.min(...history.map(h => h.price)) : null
   const maxPrice = history.length ? Math.max(...history.map(h => h.price)) : null
@@ -176,7 +182,7 @@ function ProductDetail({ sku, setRoute, goBack, canGoBack }) {
         <div style={{ flex: 1, minWidth: 0 }}>
           <div className="row" style={{ gap: 10, marginBottom: 6 }}>
             {p.category && <span className="badge">{p.category}</span>}
-            {!p.price && <span className="badge red"><span className="dot" />ยังไม่มีราคา</span>}
+            {!latestPrice && <span className="badge red"><span className="dot" />ยังไม่มีราคา</span>}
           </div>
           <h1 className="detail-title">{M.productDisplayName(p.sku)}</h1>
           {p.formula && p.formula !== M.productDisplayName(p.sku) && (
@@ -214,7 +220,11 @@ function ProductDetail({ sku, setRoute, goBack, canGoBack }) {
                       )
                     })()}
                   </dd></>}
-                  <dt>ราคาขาย</dt><dd className="mono">{p.price ? <><strong>{M.thbDec(p.price)}</strong> {p.uom && `/ ${p.uom}`}</> : <span className="dim">ยังไม่มีราคา</span>}</dd>
+                  <dt>ราคาขาย</dt><dd className="mono">
+                    {latestPrice
+                      ? <><strong>{M.thbDec(latestPrice)}</strong>{p.uom && ` / ${p.uom}`}{latestPriceDate && <span className="dim" style={{ fontSize: 11, marginLeft: 8 }}>ล่าสุด {M.fmtDate(latestPriceDate)}</span>}</>
+                      : <span className="dim">ยังไม่มีราคา</span>}
+                  </dd>
                   {sampleLineItem?.vol && <><dt>ปริมาตร</dt><dd>{sampleLineItem.vol}</dd></>}
                   {history.length > 0 && <><dt>ขายครั้งแรก</dt><dd>{M.fmtDate(history[0].date)}</dd></>}
                   {history.length > 0 && <><dt>ขายล่าสุด</dt><dd>{M.fmtDate(history[history.length - 1].date)}</dd></>}
@@ -337,8 +347,11 @@ function ProductDetail({ sku, setRoute, goBack, canGoBack }) {
         <aside className="page-rail">
           <div className="rail-stat">
             <div className="stat-label">ราคาขายปัจจุบัน</div>
-            <div className="stat-value">{p.price ? M.thb(p.price) : "—"}</div>
-            <div className="dim" style={{ fontSize: 11, marginTop: 4 }}>{p.uom ? `ต่อ ${p.uom}` : "—"}</div>
+            <div className="stat-value">{latestPrice ? M.thb(latestPrice) : "—"}</div>
+            <div className="dim" style={{ fontSize: 11, marginTop: 4 }}>
+              {p.uom ? `ต่อ ${p.uom}` : "—"}
+              {latestPriceDate && <> · {M.fmtDate(latestPriceDate)}</>}
+            </div>
           </div>
           <div className="rail-stat">
             <div className="stat-label">ช่วงราคาในประวัติ</div>
