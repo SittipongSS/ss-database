@@ -1,7 +1,7 @@
 import React from 'react'
 import MOCK from '../lib/mock.js'
 import { Icon } from './icons.jsx'
-import { Sparkline, BarChart, Donut } from './charts.jsx'
+import { BarChart } from './charts.jsx'
 import { StatusBadge } from './ui.jsx'
 
 const PERIOD_LABELS = { all: "ทั้งหมด", day: "รายวัน", week: "รายสัปดาห์", month: "รายเดือน", year: "รายปี" }
@@ -105,7 +105,6 @@ function KpiCard({ label, value, delta, deltaDir, sub, sparkValues }) {
         </div>
       )}
       {sub && <div className="dim" style={{ fontSize: 11, marginTop: 4 }}>{sub}</div>}
-      {sparkValues && <div style={{ marginTop: 10 }}><Sparkline values={sparkValues} /></div>}
     </div>
   )
 }
@@ -304,8 +303,8 @@ function DashV1(props) {
   return (
     <>
       <div className="kpi-row">
-        <KpiCard label="ยอดขาย 12 เดือน" value={M.thb(totalRev)} delta={lastMonthYoY != null ? `${lastMonthYoY >= 0 ? "+" : ""}${lastMonthYoY.toFixed(1)}% YoY` : null} deltaDir={lastMonthYoY >= 0 ? "up" : "down"} sparkValues={M.monthly.slice(-12).map(m => m.rev)} />
-        <KpiCard label={`เดือนล่าสุด · ${lastMonthLabel}`} value={M.thb(lastMonth.rev)} delta={`${moMGrowth >= 0 ? "+" : ""}${moMGrowth.toFixed(1)}% MoM`} deltaDir={moMGrowth >= 0 ? "up" : "down"} sparkValues={M.monthly.slice(-6).map(m => m.rev)} />
+        <KpiCard label="ยอดขาย 12 เดือน" value={M.thb(totalRev)} delta={lastMonthYoY != null ? `${lastMonthYoY >= 0 ? "+" : ""}${lastMonthYoY.toFixed(1)}% YoY` : null} deltaDir={lastMonthYoY >= 0 ? "up" : "down"} />
+        <KpiCard label={`เดือนล่าสุด · ${lastMonthLabel}`} value={M.thb(lastMonth.rev)} delta={`${moMGrowth >= 0 ? "+" : ""}${moMGrowth.toFixed(1)}% MoM`} deltaDir={moMGrowth >= 0 ? "up" : "down"} />
         <OrdersKpiCard />
         <SalesKpiCard />
       </div>
@@ -357,7 +356,6 @@ function DashV2(props) {
               </div>
             )}
           </div>
-          <div style={{ marginTop: 16 }}><Sparkline values={M.monthly.slice(-12).map(m => m.rev)} height={56} /></div>
         </div>
         <OrdersKpiCard />
       </div>
