@@ -376,10 +376,11 @@ function DashV1(props) {
 }
 
 function DashV2(props) {
-  const { M, totalRev, prevYearRev, lastMonthLabel, recentOrders, setRoute } = props
+  const { M, recentOrders, setRoute } = props
   return (
     <>
-      <div className="grid dash-hero-grid" style={{ marginBottom: 20 }}>
+      <div className="kpi-row">
+        <YoYCard />
         <SalesKpiCard />
         <OrdersKpiCard />
       </div>
