@@ -2,7 +2,7 @@ import React from 'react'
 
 export function LineChart({ data, height = 220, accentColor = "var(--accent)", showGrid = true, formatY, formatX }) {
   if (!data || data.length === 0) return null
-  const W = 800, H = height, PADL = 50, PADR = 16, PADT = 16, PADB = 28
+  const W = 800, H = height, PADL = 64, PADR = 20, PADT = 16, PADB = 28
   const ys = data.map(d => d.y)
   const minY = Math.min(...ys), maxY = Math.max(...ys)
   const yRange = maxY - minY || 1
@@ -14,7 +14,7 @@ export function LineChart({ data, height = 220, accentColor = "var(--accent)", s
   const yTicks = 4
   const ticks = Array.from({ length: yTicks + 1 }, (_, i) => yMin + (i / yTicks) * (yMax - yMin))
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={H} preserveAspectRatio="none" style={{ overflow: "visible" }}>
+    <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={H} preserveAspectRatio="none">
       <defs>
         <linearGradient id="lineGrad" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor={accentColor} stopOpacity="0.18" />
@@ -42,7 +42,7 @@ export function LineChart({ data, height = 220, accentColor = "var(--accent)", s
 
 export function BarChart({ data, height = 220, accentColor = "var(--accent)", formatY, formatX, valueLabels = false }) {
   if (!data || data.length === 0) return null
-  const W = 800, H = height, PADL = 50, PADR = 16, PADT = 20, PADB = 28
+  const W = 800, H = height, PADL = 64, PADR = 20, PADT = 20, PADB = 28
   const ys = data.map(d => d.y)
   const maxY = Math.max(...ys) * 1.1 || 1
   const xStep = (W - PADL - PADR) / data.length
@@ -51,7 +51,7 @@ export function BarChart({ data, height = 220, accentColor = "var(--accent)", fo
   const yTicks = 4
   const ticks = Array.from({ length: yTicks + 1 }, (_, i) => (i / yTicks) * maxY)
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={H} preserveAspectRatio="none" style={{ overflow: "visible" }}>
+    <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={H} preserveAspectRatio="none">
       {ticks.map((t, i) => (
         <g key={i}>
           <line x1={PADL} x2={W - PADR} y1={yScale(t)} y2={yScale(t)} stroke="var(--border)" strokeDasharray={i === 0 ? "" : "2 3"} />
