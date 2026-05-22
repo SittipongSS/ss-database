@@ -119,7 +119,7 @@ function AlertCard({ count, label, sub, tone, icon }) {
 
 function OrdersKpiCard() {
   const M = MOCK
-  const [period, setPeriod] = React.useState("all")
+  const [period, setPeriod] = React.useState("year")
   const filtered = React.useMemo(() => filterOrdersByPeriod(M.orders, period, M.today), [period, M.orders])
   const count = filtered.length
   const total = filtered.reduce((s, o) => s + M.orderTotal(o), 0)
@@ -141,7 +141,7 @@ function OrdersKpiCard() {
 
 function SalesKpiCard() {
   const M = MOCK
-  const [period, setPeriod] = React.useState("month")
+  const [period, setPeriod] = React.useState("year")
   const filtered = React.useMemo(() => filterOrdersByPeriod(M.orders, period, M.today), [period, M.orders])
   const total = filtered.reduce((s, o) => s + M.orderTotal(o), 0)
   const count = filtered.length
@@ -180,7 +180,7 @@ function ShipStatusCard() {
 
 function YoYCard() {
   const M = MOCK
-  const [period, setPeriod] = React.useState("month")
+  const [period, setPeriod] = React.useState("year")
   const { current, previous, label } = React.useMemo(() => {
     const now = new Date(M.today)
     const curYear = now.getFullYear()
@@ -249,7 +249,7 @@ function MonthlyRevenueChart() {
 
 function TopProductsByRevenueCard({ setRoute }) {
   const M = MOCK
-  const [period, setPeriod] = React.useState("all")
+  const [period, setPeriod] = React.useState("year")
   const items = React.useMemo(() => {
     const src = filterOrdersByPeriod(M.orders, period, M.today)
     const totals = {}
@@ -293,7 +293,7 @@ function TopProductsByRevenueCard({ setRoute }) {
 
 function OrdersTrendChart() {
   const M = MOCK
-  const [period, setPeriod] = React.useState("month")
+  const [period, setPeriod] = React.useState("year")
   const buckets = React.useMemo(() => bucketOrdersByPeriod(M.orders, period, M.today), [period, M.orders])
   const total = buckets.reduce((s, b) => s + b.y, 0)
   return (
@@ -315,7 +315,7 @@ function OrdersTrendChart() {
 
 function TopCategoriesCard({ setRoute }) {
   const M = MOCK
-  const [period, setPeriod] = React.useState("all")
+  const [period, setPeriod] = React.useState("year")
   const items = React.useMemo(() => {
     const src = filterOrdersByPeriod(M.orders, period, M.today)
     const totals = {}
@@ -356,7 +356,7 @@ function TopCategoriesCard({ setRoute }) {
 
 function TopCustomersCard({ setRoute }) {
   const M = MOCK
-  const [period, setPeriod] = React.useState("all")
+  const [period, setPeriod] = React.useState("year")
   const items = React.useMemo(() => {
     const src = filterOrdersByPeriod(M.orders, period, M.today)
     const totals = {}
