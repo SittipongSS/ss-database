@@ -4,6 +4,259 @@ import { Icon } from './icons.jsx'
 import { LineChart, fmtChartDate } from './charts.jsx'
 import { StatusBadge } from './ui.jsx'
 
+// ── Price History Page ───────────────────────────────────────
+
+function PriceHistoryPage({ initialSku, setRoute }) {
+  const M = MOCK
+  const skusWithHistory = React.useMemo(() => M.skusWithPriceHistory(), [M.orders])
+  const [selected, setSelected] = React.useState(
+    initialSku && skusWithHistory.includes(initialSku) ? initialSku : skusWithHistory[0]
+  )
+  const [q, setQ] = React.useState("")
+  const [showList, setShowList] = React.useState(!selected)
+
+  const visibleSkus = React.useMemo(() => {
+    const qq = q.toLowerCase().trim()
+    const list = qq
+      ? skusWithHistory.filter(sku => {
+          const p = M.productOf(sku)
+          return sku.toLowerCase().includes(qq) ||
+            (p?.name || "").toLowerCase().includes(qq) ||
+            (p?.brand || "").toLowerCase().includes(qq) ||
+            (p?.category || "").toLowerCase().includes(qq)
+        })
+      : skusWithHistory
+    return list.slice(0, 200)
+  }, [q, skusWithHistory])
+
+  const product = M.productOf(selected)
+  const history = selected ? M.priceHistoryOf(selected) : []
+  const chartData = history.map(h => ({ x: h.date, y: h.price, raw: h }))
+
+  const latestPrice = history.length ? history[history.length - 1].price : null
+  const minPrice    = history.length ? Math.min(...history.map(h => h.price)) : null
+  const maxPrice    = history.length ? Math.max(...history.map(h => h.price)) : null
+  const firstPrice  = history.length ? history[0].price : null
+  const totalMove   = (firstPrice && latestPrice) ? ((latestPrice - firstPrice) / firstPrice) * 100 : null
+
+  const handleSelect = (sku) => {
+    setSelected(sku)
+    setShowList(false)
+    setQ("")
+  }
+
+  return (
+    <div className="page">
+      <div className="page-head">
+        <div>
+          <h1 className="page-title">ประวัติราคา · Price History</h1>
+          <p className="page-sub">ติดตามราคาขายจริงของแต่ละ SKU จากออเดอร์ทั้งหมด</p>
+        </div>
+      </div>
+
+      {/* SKU Search / Selector */}
+      <div className="card" style={{ marginBottom: 20 }}>
+        <div style={{ padding: "12px 16px", borderBottom: showList ? "1px solid var(--border)" : "none" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div className="search-bar" style={{ flex: 1, margin: 0, maxWidth: "100%" }}>
+              <Icon name="search" className="icon-l" />
+              <input
+                value={q}
+                onChange={e => { setQ(e.target.value); setShowList(true) }}
+                onFocus={() => setShowList(true)}
+                placeholder="ค้นหา SKU · ชื่อสินค้า · หมวด…"
+                style={{ height: 36 }}
+              />
+            </div>
+            {selected && !showList && (
+              <button className="btn ghost" onClick={() => setShowList(true)} style={{ flexShrink: 0, gap: 6 }}>
+                <Icon name="products" className="ico" />
+                <span className="mono" style={{ fontSize: 12 }}>{selected}</span>
+                <Icon name="chevronDown" className="ico" />
+              </button>
+            )}
+          </div>
+        </div>
+
+        {showList && (
+          <div style={{ maxHeight: 320, overflowY: "auto" }}>
+            {visibleSkus.length === 0 && (
+              <div className="empty">ไม่พบ SKU ที่ตรงกัน</div>
+            )}
+            {visibleSkus.map(sku => {
+              const pp = M.productOf(sku)
+              const h  = M.priceHistoryOf(sku)
+              const latest   = h[h.length - 1]
+              const earliest = h[0]
+              const move = (earliest && latest && earliest.price !== latest.price)
+                ? ((latest.price - earliest.price) / earliest.price) * 100 : 0
+              return (
+                <div
+                  key={sku}
+                  onClick={() => handleSelect(sku)}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 12,
+                    padding: "10px 16px",
+                    borderBottom: "1px solid var(--border)",
+                    cursor: "pointer",
+                    background: selected === sku ? "var(--panel-2)" : "transparent",
+                    borderLeft: selected === sku ? "2px solid var(--accent)" : "2px solid transparent",
+                  }}
+                >
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <span className="mono" style={{ fontSize: 11, fontWeight: 600 }}>{sku}</span>
+                      {pp?.category && <span className="badge" style={{ height: 18, fontSize: 10, padding: "0 6px" }}>{pp.category}</span>}
+                    </div>
+                    <div style={{ fontSize: 12, color: "var(--text-2)", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {pp?.name || sku}
+                    </div>
+                  </div>
+                  <div style={{ textAlign: "right", flexShrink: 0 }}>
+                    <div className="mono" style={{ fontSize: 12, fontWeight: 600 }}>{M.thb(latest?.price)}</div>
+                    {move !== 0 && (
+                      <span className={"badge " + (move > 0 ? "amber" : "green")} style={{ height: 18, fontSize: 10, padding: "0 6px" }}>
+                        {move > 0 ? "+" : ""}{move.toFixed(1)}%
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Detail Section */}
+      {selected && !showList && (
+        <>
+          {/* Header */}
+          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, marginBottom: 16, flexWrap: "wrap" }}>
+            <div>
+              <div style={{ fontSize: 18, fontWeight: 600 }}>{product?.name || selected}</div>
+              <div className="dim" style={{ fontSize: 12, marginTop: 4, display: "flex", gap: 10, flexWrap: "wrap" }}>
+                <span className="mono">{selected}</span>
+                {product?.category && <span>· {product.category}</span>}
+                {product?.brand && <span>· {product.brand}</span>}
+              </div>
+            </div>
+            <button className="btn" onClick={() => setRoute("products:" + selected)}>
+              เปิดหน้าสินค้า <Icon name="chevronRight" className="ico" />
+            </button>
+          </div>
+
+          {/* KPI Cards */}
+          <div className="kpi-row" style={{ marginBottom: 20 }}>
+            <div className="stat">
+              <div className="stat-label">ราคาล่าสุด</div>
+              <div className="stat-value">{latestPrice != null ? M.thb(latestPrice) : "—"}</div>
+              <div className="dim" style={{ fontSize: 11, marginTop: 4 }}>
+                {history.length > 0 ? M.fmtDate(history[history.length - 1].date) : ""}
+              </div>
+            </div>
+            <div className="stat">
+              <div className="stat-label">เปลี่ยนแปลงรวม</div>
+              <div className="stat-value" style={{ color: totalMove == null ? undefined : totalMove > 0 ? "var(--amber)" : totalMove < 0 ? "var(--green)" : undefined }}>
+                {totalMove != null ? `${totalMove > 0 ? "+" : ""}${totalMove.toFixed(1)}%` : "—"}
+              </div>
+              <div className="dim" style={{ fontSize: 11, marginTop: 4 }}>
+                {firstPrice != null ? `${M.thb(firstPrice)} → ${M.thb(latestPrice)}` : ""}
+              </div>
+            </div>
+            <div className="stat">
+              <div className="stat-label">ราคาต่ำสุด / สูงสุด</div>
+              <div className="stat-value" style={{ fontSize: 18 }}>
+                {minPrice != null ? M.thb(minPrice) : "—"}
+              </div>
+              <div className="dim" style={{ fontSize: 11, marginTop: 4 }}>
+                สูงสุด {maxPrice != null ? M.thb(maxPrice) : "—"}
+              </div>
+            </div>
+            <div className="stat">
+              <div className="stat-label">จำนวนครั้งที่ขาย</div>
+              <div className="stat-value">{M.num(history.length)}</div>
+              <div className="dim" style={{ fontSize: 11, marginTop: 4 }}>
+                {history.length > 0 ? `${M.fmtDate(history[0].date)} – ${M.fmtDate(history[history.length - 1].date)}` : ""}
+              </div>
+            </div>
+          </div>
+
+          {/* Chart */}
+          <div className="card" style={{ marginBottom: 20 }}>
+            <div className="card-head">
+              <h3>กราฟราคาตามเวลา · Price Trend</h3>
+              <span className="more">{history.length} จุดข้อมูล</span>
+            </div>
+            <div className="chart-wrap">
+              {chartData.length >= 2
+                ? <LineChart data={chartData} height={280} formatY={v => "฿" + v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} formatX={fmtChartDate} />
+                : <div className="empty">ต้องมีข้อมูลอย่างน้อย 2 จุดเพื่อแสดงกราฟ</div>}
+            </div>
+          </div>
+
+          {/* History Table */}
+          <div className="card">
+            <div className="card-head">
+              <h3>ประวัติราคาขายทั้งหมด</h3>
+              <span className="more">{history.length} รายการ</span>
+            </div>
+            {history.length === 0
+              ? <div className="empty">ยังไม่มีประวัติราคา</div>
+              : (
+                <div className="tbl-scroll">
+                  <table className="tbl">
+                    <thead>
+                      <tr>
+                        <th>วันที่</th>
+                        <th>เลขเอกสาร</th>
+                        <th>รหัสลูกค้า</th>
+                        <th>ชื่อบริษัท</th>
+                        <th className="num">ราคา</th>
+                        <th className="num">เปลี่ยน</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {[...history].reverse().map((h, i, arr) => {
+                        const prev = arr[i + 1]
+                        const diff = prev ? ((h.price - prev.price) / prev.price) * 100 : null
+                        const cust = M.customerOf(h.customer)
+                        return (
+                          <tr key={i} onClick={() => h.doc && setRoute("orders:" + h.doc)}>
+                            <td>{M.fmtDate(h.date)}</td>
+                            <td className="code">{h.doc || "—"}</td>
+                            <td className="code dim">{h.customer}</td>
+                            <td style={{ maxWidth: 260, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                              {cust?.name || <span className="dim">—</span>}
+                            </td>
+                            <td className="num mono"><strong>{M.thb(h.price)}</strong></td>
+                            <td className="num">
+                              {diff != null && Math.abs(diff) > 0.01
+                                ? <span className={"badge " + (diff > 0 ? "amber" : "green")}>{diff > 0 ? "+" : ""}{diff.toFixed(1)}%</span>
+                                : diff === null
+                                  ? <span className="dim" style={{ fontSize: 11 }}>เริ่มต้น</span>
+                                  : <span className="dim">—</span>}
+                            </td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+          </div>
+        </>
+      )}
+
+      {/* Empty state */}
+      {skusWithHistory.length === 0 && (
+        <div className="card"><div className="empty">ยังไม่มีข้อมูลประวัติราคา</div></div>
+      )}
+    </div>
+  )
+}
+
+// ── Global Search / Tracking ─────────────────────────────────
+
 function Tracking({ initialQuery, setRoute }) {
   const M = MOCK
   const [q, setQ] = React.useState(initialQuery || "")
@@ -16,42 +269,31 @@ function Tracking({ initialQuery, setRoute }) {
       (p.sku || "").toLowerCase().includes(query) ||
       (p.name || "").toLowerCase().includes(query) ||
       (p.category || "").toLowerCase().includes(query) ||
-      (p.brand || "").toLowerCase().includes(query) ||
-      (p.customerAR || "").toLowerCase().includes(query)
+      (p.brand || "").toLowerCase().includes(query)
     )
     const customers = M.customers.filter(c =>
       (c.id || "").toLowerCase().includes(query) ||
       (c.name || "").toLowerCase().includes(query) ||
-      (c.short || "").toLowerCase().includes(query) ||
       (c.brand || "").toLowerCase().includes(query) ||
-      (c.contact || "").toLowerCase().includes(query) ||
-      (c.city || "").toLowerCase().includes(query)
+      (c.contact || "").toLowerCase().includes(query)
     )
     const orders = M.orders.filter(o =>
       (o.doc || "").toLowerCase().includes(query) ||
       (o.customer || "").toLowerCase().includes(query) ||
       o.items.some(i => (i.sku || "").toLowerCase().includes(query)) ||
-      (M.customerOf(o.customer)?.short || "").toLowerCase().includes(query) ||
-      (o.brand || "").toLowerCase().includes(query)
+      (M.customerOf(o.customer)?.name || "").toLowerCase().includes(query)
     )
     return { products, customers, orders }
   }, [q])
 
   const total = matches.products.length + matches.customers.length + matches.orders.length
 
-  const examples = (() => {
-    const firstSku = M.products.find(p => p.price)?.sku
-    const firstAR = M.topCustomers(1)[0]?.id
-    const firstDoc = M.orders[0]?.doc
-    return [firstSku, firstAR, firstDoc, "BODY PERFUME", "Scent Studio", "AR-002"].filter(Boolean)
-  })()
-
   return (
     <div className="page">
       <div className="page-head">
         <div>
-          <h1 className="page-title">ค้นหา &amp; Tracking</h1>
-          <p className="page-sub">ค้นหาจากรหัสสินค้า · เลขที่เอกสาร · รหัสลูกค้า หรือ ชื่อใด ๆ ในระบบ</p>
+          <h1 className="page-title">ค้นหา · Search</h1>
+          <p className="page-sub">ค้นหาจากรหัสสินค้า · เลขที่เอกสาร · รหัสลูกค้า หรือชื่อใดก็ได้ในระบบ</p>
         </div>
       </div>
 
@@ -62,22 +304,10 @@ function Tracking({ initialQuery, setRoute }) {
             autoFocus
             value={q}
             onChange={e => setQ(e.target.value)}
-            placeholder="พิมพ์รหัสสินค้า เลขเอกสาร รหัสลูกค้า ชื่อ หรือกลุ่มกลิ่น…"
+            placeholder="พิมพ์รหัสสินค้า · เลขเอกสาร · รหัสลูกค้า · ชื่อบริษัท…"
             style={{ height: 44, fontSize: 15, paddingLeft: 40 }}
           />
         </div>
-        {!q && (
-          <div style={{ marginTop: 14 }}>
-            <div className="dim" style={{ fontSize: 12, marginBottom: 8 }}>ลองค้นหาด้วยตัวอย่าง:</div>
-            <div className="row" style={{ gap: 8, flexWrap: "wrap" }}>
-              {examples.map(ex => (
-                <button key={ex} className="filter-chip" onClick={() => setQ(ex)}>
-                  <span className="mono">{ex}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
 
       {q && (
@@ -104,73 +334,73 @@ function Tracking({ initialQuery, setRoute }) {
           {(pivot === "all" || pivot === "products") && matches.products.length > 0 && (
             <div className="card" style={{ marginBottom: 16 }}>
               <div className="card-head">
-                <h3><Icon name="products" className="ico" style={{ display: "inline", verticalAlign: "middle", marginRight: 6 }}/>สินค้า · Products ({matches.products.length})</h3>
+                <h3>สินค้า · Products ({matches.products.length})</h3>
               </div>
-              <table className="tbl">
-                <thead><tr><th>SKU</th><th>ชื่อ</th><th>หมวด</th><th>กลุ่มกลิ่น</th><th className="num">ราคา</th><th className="num">สต็อก</th></tr></thead>
-                <tbody>
-                  {matches.products.slice(0, pivot === "products" ? 100 : 5).map(p => (
-                    <tr key={p.sku} onClick={() => setRoute("products:" + p.sku)}>
-                      <td className="code">{Highlight(p.sku, q)}</td>
-                      <td>{Highlight(p.name, q)}</td>
-                      <td><span className="badge">{p.category}</span></td>
-                      <td className="dim">{p.family}</td>
-                      <td className="num"><strong>{M.thb(p.price)}</strong></td>
-                      <td className="num">{M.num(p.stock)} {p.uom}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <div className="tbl-scroll">
+                <table className="tbl">
+                  <thead><tr><th>SKU</th><th>ชื่อ</th><th>หมวด</th><th className="num">ราคา</th></tr></thead>
+                  <tbody>
+                    {matches.products.slice(0, pivot === "products" ? 100 : 5).map(p => (
+                      <tr key={p.sku} onClick={() => setRoute("products:" + p.sku)}>
+                        <td className="code">{Highlight(p.sku, q)}</td>
+                        <td>{Highlight(p.name, q)}</td>
+                        <td><span className="badge">{p.category}</span></td>
+                        <td className="num"><strong>{M.thb(p.price)}</strong></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
 
           {(pivot === "all" || pivot === "customers") && matches.customers.length > 0 && (
             <div className="card" style={{ marginBottom: 16 }}>
               <div className="card-head">
-                <h3><Icon name="customers" className="ico" style={{ display: "inline", verticalAlign: "middle", marginRight: 6 }}/>ลูกค้า · Customers ({matches.customers.length})</h3>
+                <h3>ลูกค้า · Customers ({matches.customers.length})</h3>
               </div>
-              <table className="tbl">
-                <thead><tr><th>รหัส</th><th>ชื่อ</th><th>Tier</th><th>เมือง</th><th>ผู้ติดต่อ</th></tr></thead>
-                <tbody>
-                  {matches.customers.slice(0, pivot === "customers" ? 100 : 5).map(c => (
-                    <tr key={c.id} onClick={() => setRoute("customers:" + c.id)}>
-                      <td className="code">{Highlight(c.id, q)}</td>
-                      <td>
-                        <div>{Highlight(c.name, q)}</div>
-                      </td>
-                      <td><span className="badge">{c.tier}</span></td>
-                      <td className="dim">{c.city}</td>
-                      <td>{c.contact}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <div className="tbl-scroll">
+                <table className="tbl">
+                  <thead><tr><th>รหัส</th><th>ชื่อ</th><th>แบรนด์</th><th>ผู้ติดต่อ</th></tr></thead>
+                  <tbody>
+                    {matches.customers.slice(0, pivot === "customers" ? 100 : 5).map(c => (
+                      <tr key={c.id} onClick={() => setRoute("customers:" + c.id)}>
+                        <td className="code">{Highlight(c.id, q)}</td>
+                        <td>{Highlight(c.name, q)}</td>
+                        <td className="dim">{c.brand}</td>
+                        <td>{c.contact}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
 
           {(pivot === "all" || pivot === "orders") && matches.orders.length > 0 && (
             <div className="card">
               <div className="card-head">
-                <h3><Icon name="orders" className="ico" style={{ display: "inline", verticalAlign: "middle", marginRight: 6 }}/>คำสั่งซื้อ · Orders ({matches.orders.length})</h3>
+                <h3>คำสั่งซื้อ · Orders ({matches.orders.length})</h3>
               </div>
-              <table className="tbl">
-                <thead><tr><th>เลขเอกสาร</th><th>วันที่</th><th>ลูกค้า</th><th>SKUs</th><th className="num">ยอดรวม</th><th>สถานะ</th></tr></thead>
-                <tbody>
-                  {matches.orders.slice(0, pivot === "orders" ? 200 : 10).map(o => {
-                    const c = M.customerOf(o.customer)
-                    return (
-                      <tr key={o.doc} onClick={() => setRoute("orders:" + o.doc)}>
-                        <td className="code">{Highlight(o.doc, q)}</td>
-                        <td>{M.fmtDate(o.date)}</td>
-                        <td>{c?.name}</td>
-                        <td className="mono dim" style={{ fontSize: 11 }}>{o.items.map(i => i.sku).join(", ")}</td>
-                        <td className="num"><strong>{M.thb(M.orderTotal(o))}</strong></td>
-                        <td><StatusBadge status={o.status} /></td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
+              <div className="tbl-scroll">
+                <table className="tbl">
+                  <thead><tr><th>เลขเอกสาร</th><th>วันที่</th><th>ลูกค้า</th><th className="num">ยอดรวม</th><th>สถานะ</th></tr></thead>
+                  <tbody>
+                    {matches.orders.slice(0, pivot === "orders" ? 200 : 10).map(o => {
+                      const c = M.customerOf(o.customer)
+                      return (
+                        <tr key={o.doc} onClick={() => setRoute("orders:" + o.doc)}>
+                          <td className="code">{Highlight(o.doc, q)}</td>
+                          <td>{M.fmtDate(o.date)}</td>
+                          <td>{c?.name || o.customer}</td>
+                          <td className="num"><strong>{M.thb(M.orderTotal(o))}</strong></td>
+                          <td><StatusBadge status={o.status} /></td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
         </>
@@ -191,139 +421,6 @@ function Highlight(text, q) {
       </mark>
       {text.slice(idx + q.length)}
     </>
-  )
-}
-
-function PriceHistoryPage({ initialSku, setRoute }) {
-  const M = MOCK
-  const skusWithHistory = React.useMemo(() => M.skusWithPriceHistory(), [M.orders])
-  const [selected, setSelected] = React.useState(initialSku && skusWithHistory.includes(initialSku) ? initialSku : skusWithHistory[0])
-  const [q, setQ] = React.useState("")
-
-  const visibleSkus = React.useMemo(() => {
-    if (!q.trim()) return skusWithHistory.slice(0, 200)
-    const qq = q.toLowerCase()
-    return skusWithHistory.filter(sku => {
-      const p = M.productOf(sku)
-      return sku.toLowerCase().includes(qq) || (p?.name || "").toLowerCase().includes(qq) || (p?.brand || "").toLowerCase().includes(qq)
-    }).slice(0, 200)
-  }, [q, skusWithHistory])
-
-  const p = M.productOf(selected)
-  const history = selected ? M.priceHistoryOf(selected) : []
-  const chartData = history.map(h => ({ x: h.date, y: h.price, raw: h }))
-  const distinctChanges = []
-  for (let i = 0; i < history.length; i++) {
-    if (i === 0 || history[i].price !== history[i-1].price) distinctChanges.push(history[i])
-  }
-
-  return (
-    <div className="page">
-      <div className="page-head">
-        <div>
-          <h1 className="page-title">ประวัติราคา · Price History</h1>
-          <p className="page-sub">ติดตามการเปลี่ยนแปลงราคาที่ขายจริงในแต่ละครั้ง · ดึงจากออเดอร์ทั้งหมด</p>
-        </div>
-      </div>
-
-      <div className="grid price-history-grid">
-        <div className="card" style={{ alignSelf: "start" }}>
-          <div className="card-head"><h3>SKU ที่มีประวัติราคา ({skusWithHistory.length})</h3></div>
-          <div style={{ padding: 10, borderBottom: "1px solid var(--border)" }}>
-            <div className="search-bar" style={{ margin: 0, maxWidth: "100%" }}>
-              <Icon name="search" className="icon-l" />
-              <input placeholder="กรอง SKU / สินค้า…" value={q} onChange={e => setQ(e.target.value)} style={{ height: 30 }} />
-            </div>
-          </div>
-          <div style={{ maxHeight: 580, overflowY: "auto" }}>
-            {visibleSkus.map(sku => {
-              const pp = M.productOf(sku)
-              const h = M.priceHistoryOf(sku)
-              const latest = h[h.length - 1]
-              const earliest = h[0]
-              const move = (earliest && latest && earliest.price !== latest.price)
-                ? ((latest.price - earliest.price) / earliest.price) * 100 : 0
-              return (
-                <div key={sku}
-                  onClick={() => setSelected(sku)}
-                  style={{
-                    padding: "10px 16px",
-                    borderBottom: "1px solid var(--border)",
-                    cursor: "pointer",
-                    background: selected === sku ? "var(--panel-2)" : "transparent",
-                    borderLeft: selected === sku ? "2px solid var(--accent)" : "2px solid transparent",
-                  }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
-                    <div className="mono" style={{ fontSize: 11, fontWeight: 500 }}>{sku}</div>
-                    {move !== 0 && (
-                      <span className={"badge " + (move > 0 ? "amber" : "green")} style={{ height: 18, padding: "0 6px", fontSize: 10 }}>
-                        {move > 0 ? "+" : ""}{move.toFixed(1)}%
-                      </span>
-                    )}
-                  </div>
-                  <div style={{ fontSize: 12, color: "var(--text-2)", marginTop: 3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{pp?.name || sku}</div>
-                  <div className="mono" style={{ fontSize: 11, marginTop: 4 }}>{M.thbDec(latest?.price)} / {pp?.uom}</div>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-
-        <div>
-          <div className="card" style={{ marginBottom: 16 }}>
-            <div className="card-head">
-              <div>
-                <h3>{p?.name || selected}</h3>
-                <div className="mono dim" style={{ fontSize: 12, marginTop: 2 }}>{selected} · {p?.category} · {p?.brand}</div>
-              </div>
-              <button className="btn ghost" onClick={() => setRoute("products:" + selected)}>เปิดสินค้า <Icon name="chevronRight" className="ico" /></button>
-            </div>
-            <div className="chart-wrap">
-              {chartData.length >= 2
-                ? <LineChart data={chartData} height={260} formatY={v => "฿" + v.toFixed(v >= 100 ? 0 : 2)} formatX={fmtChartDate} />
-                : <div className="empty">ยังไม่มีประวัติราคาเพียงพอ</div>}
-            </div>
-          </div>
-
-          <div className="card">
-            <div className="card-head">
-              <h3>การเปลี่ยนแปลงราคา · Price Points</h3>
-              <span className="more">{distinctChanges.length} จุดเปลี่ยน · {history.length} ครั้งที่ขาย</span>
-            </div>
-            {history.length === 0
-              ? <div className="empty">ยังไม่มีประวัติราคา</div>
-              : (
-                <div className="tbl-scroll">
-                <table className="tbl">
-                  <thead><tr><th>วันที่</th><th>เอกสาร</th><th>รหัสลูกค้า</th><th>ชื่อบริษัท</th><th className="num">ราคา</th><th className="num">เปลี่ยน</th></tr></thead>
-                  <tbody>
-                    {[...history].reverse().map((h, i, arr) => {
-                      const next = arr[i + 1]
-                      const diff = next ? ((h.price - next.price) / next.price) * 100 : null
-                      const cust = M.customerOf(h.customer)
-                      return (
-                        <tr key={i} onClick={() => h.doc && setRoute("orders:" + h.doc)}>
-                          <td>{M.fmtDate(h.date)}</td>
-                          <td className="code">{h.doc || "—"}</td>
-                          <td className="code">{h.customer}</td>
-                          <td style={{ maxWidth: 240, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{cust?.name || <span className="dim">—</span>}</td>
-                          <td className="num mono"><strong>{M.thbDec(h.price)}</strong></td>
-                          <td className="num">
-                            {diff != null && diff !== 0
-                              ? <span className={"badge " + (diff > 0 ? "amber" : "green")}>{diff > 0 ? "+" : ""}{diff.toFixed(1)}%</span>
-                              : (diff === 0 ? <span className="dim">—</span> : <span className="dim">เริ่มต้น</span>)}
-                          </td>
-                        </tr>
-                      )
-                    })}
-                  </tbody>
-                </table>
-                </div>
-              )}
-          </div>
-        </div>
-      </div>
-    </div>
   )
 }
 
