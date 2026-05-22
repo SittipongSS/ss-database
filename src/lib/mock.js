@@ -1,7 +1,7 @@
 const MOCK = (() => {
-  const RAW = {"customers":[],"products":[],"orders":[],"monthly":[],"categories":[],"mainNames":{}};
+  const RAW = {"customers":[],"products":[],"orders":[],"monthly":[],"categories":[],"mainNames":{},"subNames":{}};
   // Mutable data — replaced by reload() when live Sheets data arrives
-  let customers, products, orders, monthly, categories, mainNames;
+  let customers, products, orders, monthly, categories, mainNames, subNames;
   let customerMap, productMap, ordersByCustomer, orderMap;
   const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Bangkok' }).format(new Date());
   let lastUpdated = null;
@@ -15,6 +15,7 @@ const MOCK = (() => {
     monthly    = raw.monthly    ?? monthly;
     categories = raw.categories ?? RAW.categories;
     mainNames  = raw.mainNames  ?? RAW.mainNames;
+    subNames   = raw.subNames   ?? RAW.subNames;
     customerMap = Object.fromEntries(customers.map(c => [c.id, c]));
     productMap  = Object.fromEntries(products.map(p => [p.sku, p]));
     // O(1) lookup indexes
@@ -57,15 +58,24 @@ const MOCK = (() => {
   function orderTotal(o) { return (o.items || []).reduce((s, i) => s + (i.total || (i.qty * i.price) || 0), 0); }
   function orderQty(o) { return (o.items || []).reduce((s, i) => s + (i.qty || 0), 0); }
   function ordersOf(customerId) { return ordersByCustomer[customerId] || []; }
+  // FG-AAA-BB-CCC-DDDD → BB = หมวดหลัก, CCC = หมวดรอง
   function mainOf(sku) {
-    const m = String(sku || "").match(/^FG-[^-]+-(\d{2})-/);
+    const m = String(sku || "").match(/^FG-[^-]+-([^-]+)-[^-]+-/);
     return m ? m[1] : null;
   }
-  function categoryLabel(sku, category) {
-    if (!category) return null;
-    const code = mainOf(sku);
-    const main = code ? (mainNames?.[code] || null) : null;
-    return main ? `${main} / ${category}` : category;
+  function subOf(sku) {
+    const m = String(sku || "").match(/^FG-[^-]+-[^-]+-([^-]+)-/);
+    return m ? m[1] : null;
+  }
+  function categoryLabel(sku, fallback) {
+    const mainCode = mainOf(sku);
+    const subCode  = subOf(sku);
+    const mainName = mainCode ? (mainNames?.[mainCode] || null) : null;
+    const subName  = subCode  ? (subNames?.[subCode]   || null) : null;
+    if (mainName && subName) return `${mainName} / ${subName}`;
+    if (mainName) return mainName;
+    if (subName)  return subName;
+    return fallback || null;
   }
   function ordersBySku(sku) {
     return orders.filter(o => o.items.some(i => i.sku === sku))
@@ -155,6 +165,7 @@ const MOCK = (() => {
       monthly,
       categories,
       mainNames,
+      subNames,
       ...liveData,
     });
   }
@@ -165,7 +176,8 @@ const MOCK = (() => {
     get monthly()   { return monthly;   },
     get categories(){ return categories;},
     get mainNames() { return mainNames; },
-    productOf, customerOf, orderOf, orderTotal, orderQty, ordersOf, mainOf, ordersBySku, categoryLabel,
+    get subNames()  { return subNames;  },
+    productOf, customerOf, orderOf, orderTotal, orderQty, ordersOf, mainOf, subOf, ordersBySku, categoryLabel,
     productDisplayName,
     thb, thbDec, num, dayDiff, lastOrderDate, customerLifetimeValue,
     fmtDate,

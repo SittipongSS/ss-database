@@ -66,7 +66,7 @@ function SkuBrowser({ skusWithHistory, selected, q, setQ, onSelect }) {
                     </div>
                     <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2, flexWrap: "wrap" }}>
                       <span className="mono dim" style={{ fontSize: 11 }}>{sku}</span>
-                      {pp?.category && <span className="badge" style={{ height: 16, fontSize: 10, padding: "0 5px" }}>{M.categoryLabel(sku, pp.category)}</span>}
+                      {M.categoryLabel(sku, pp?.category) && <span className="badge" style={{ height: 16, fontSize: 10, padding: "0 5px" }}>{M.categoryLabel(sku, pp?.category)}</span>}
                     </div>
                   </div>
                   <div style={{ textAlign: "right", flexShrink: 0 }}>

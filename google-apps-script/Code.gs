@@ -260,6 +260,42 @@ function extractOrdersAndMonthly(ss) {
   return { orders: orders, monthly: monthly };
 }
 
+// ── RAW_หมวดสินค้า ───────────────────────────────────────────
+// โครงสร้าง SKU: FG-AAA-BB-CCC-DDDD
+//   BB  = รหัสหมวดหลัก  → mainNames { "BB": "ชื่อหมวดหลัก" }
+//   CCC = รหัสหมวดรอง   → subNames  { "CCC": "ชื่อหมวดรอง" }
+
+function extractCategories(ss) {
+  var data = readSheet(ss, 'RAW_หมวดสินค้า');
+  if (!data) return { mainNames: {}, subNames: {} };
+
+  var m = buildHeaderMap(data.headers);
+
+  // หมวดหลัก (BB)
+  var iMainCode = col(m, 'รหัสหมวดหลัก', 'รหัสหลัก', 'bb', 'main code', 'รหัส');
+  var iMainName = col(m, 'ชื่อหมวดหลัก', 'หมวดหลัก', 'main name', 'main', 'ชื่อหมวด');
+
+  // หมวดรอง (CCC)
+  var iSubCode  = col(m, 'รหัสหมวดรอง', 'รหัสรอง', 'ccc', 'sub code', 'รหัสสินค้า');
+  var iSubName  = col(m, 'ชื่อหมวดรอง', 'หมวดรอง', 'sub name', 'sub', 'ชื่อสินค้า');
+
+  var mainNames = {}, subNames = {};
+  data.rows.forEach(function(r) {
+    var mainCode = str(r, iMainCode);
+    var mainName = str(r, iMainName);
+    if (mainCode && mainName && mainNames[mainCode] === undefined) {
+      mainNames[mainCode] = mainName;
+    }
+    var subCode = str(r, iSubCode);
+    var subName = str(r, iSubName);
+    if (subCode && subName && subNames[subCode] === undefined) {
+      subNames[subCode] = subName;
+    }
+  });
+
+  return { mainNames: mainNames, subNames: subNames };
+}
+
 // ── doGet ────────────────────────────────────────────────────
 
 function doGet(e) {
@@ -267,11 +303,12 @@ function doGet(e) {
     var ss    = SpreadsheetApp.getActiveSpreadsheet();
     var param = (e && e.parameter && e.parameter.sheet) || 'all';
 
-    if (param === 'customers') return json({ customers: extractCustomers(ss) });
-    if (param === 'products')  return json({ products:  extractProducts(ss) });
+    var cats = extractCategories(ss);
+    if (param === 'customers') return json({ customers: extractCustomers(ss), mainNames: cats.mainNames, subNames: cats.subNames });
+    if (param === 'products')  return json({ products:  extractProducts(ss),  mainNames: cats.mainNames, subNames: cats.subNames });
     if (param === 'orders') {
       var od = extractOrdersAndMonthly(ss);
-      return json({ orders: od.orders, monthly: od.monthly });
+      return json({ orders: od.orders, monthly: od.monthly, mainNames: cats.mainNames, subNames: cats.subNames });
     }
     var od2 = extractOrdersAndMonthly(ss);
     return json({
@@ -279,6 +316,8 @@ function doGet(e) {
       products:  extractProducts(ss),
       orders:    od2.orders,
       monthly:   od2.monthly,
+      mainNames: cats.mainNames,
+      subNames:  cats.subNames,
     });
   } catch (err) {
     return json({ error: err.message });
@@ -295,7 +334,7 @@ function json(obj) {
 
 function testSheetHeaders() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
-  ['1_ลูกค้า', '2_สินค้า', '3_ออเดอร์', '4_รายการสินค้า'].forEach(function(name) {
+  ['1_ลูกค้า', '2_สินค้า', '3_ออเดอร์', '4_รายการสินค้า', 'RAW_หมวดสินค้า'].forEach(function(name) {
     var sh = ss.getSheetByName(name);
     if (!sh) { Logger.log(name + ': ไม่พบ'); return; }
     Logger.log('=== ' + name + ' rows=' + sh.getLastRow());
@@ -304,6 +343,10 @@ function testSheetHeaders() {
     if (sh.getLastRow() > 1) {
       var r2 = sh.getRange(2, 1, 1, sh.getLastColumn()).getValues()[0];
       Logger.log('row2: ' + JSON.stringify(r2));
+      if (sh.getLastRow() > 2) {
+        var r3 = sh.getRange(3, 1, 1, sh.getLastColumn()).getValues()[0];
+        Logger.log('row3: ' + JSON.stringify(r3));
+      }
     }
   });
 }
