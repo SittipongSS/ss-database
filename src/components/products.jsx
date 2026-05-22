@@ -170,14 +170,10 @@ function ProductDetail({ sku, setRoute, goBack, canGoBack }) {
   const [priceSize, setPriceSize] = React.useState(10)
   const [ordPage, setOrdPage] = React.useState(1)
   const [ordSize, setOrdSize] = React.useState(10)
-  const [custPage, setCustPage] = React.useState(1)
-  const [custSize, setCustSize] = React.useState(10)
-
   if (!p) return <div className="page"><div className="empty">ไม่พบสินค้ารหัส {sku}</div></div>
 
   const history = M.priceHistoryOf(sku)
   const ordersOfSku = M.ordersBySku(sku).sort((a,b) => b.date.localeCompare(a.date))
-  const customers = M.customersOfSku(sku)
   const totalSold = ordersOfSku.reduce((s, o) => s + o.items.reduce((ss, i) => ss + (i.qty || 0), 0), 0)
   const totalRev = ordersOfSku.reduce((s, o) => s + o.items.reduce((ss, i) => ss + (i.total || i.qty * i.price || 0), 0), 0)
 
@@ -246,7 +242,6 @@ function ProductDetail({ sku, setRoute, goBack, canGoBack }) {
             <div className={"tab " + (tab === "info" ? "active" : "")} onClick={() => setTab("info")}>ข้อมูลสินค้า</div>
             <div className={"tab " + (tab === "price" ? "active" : "")} onClick={() => setTab("price")}>ประวัติราคา ({history.length})</div>
             <div className={"tab " + (tab === "orders" ? "active" : "")} onClick={() => setTab("orders")}>ออเดอร์ ({ordersOfSku.length})</div>
-            <div className={"tab " + (tab === "customers" ? "active" : "")} onClick={() => setTab("customers")}>ลูกค้า ({customers.length})</div>
           </div>
 
           {tab === "info" && (
@@ -283,7 +278,7 @@ function ProductDetail({ sku, setRoute, goBack, canGoBack }) {
                 </div>
                 <div className="chart-wrap">
                   {chartData.length >= 2
-                    ? <LineChart data={chartData} height={260} formatY={v => "฿" + v.toFixed(v >= 100 ? 0 : 2)} formatX={fmtChartDate} />
+                    ? <LineChart data={chartData} height={300} formatY={v => "฿" + v.toFixed(v >= 100 ? 0 : 2)} formatX={fmtChartDate} />
                     : <div className="empty">ยังไม่มีประวัติราคาเพียงพอ</div>}
                 </div>
               </div>
@@ -350,32 +345,6 @@ function ProductDetail({ sku, setRoute, goBack, canGoBack }) {
             </div>
           )}
 
-          {tab === "customers" && (
-            <div className="card">
-              <div className="tbl-scroll">
-              <table className="tbl">
-                <thead><tr><th>รหัส</th><th>ลูกค้า</th><th className="num">จำนวนรวม</th><th className="num">รายได้รวม</th><th className="num">ครั้ง</th><th className="num">ราคาล่าสุด</th><th>สั่งล่าสุด</th></tr></thead>
-                <tbody>
-                  {customers.slice((custPage-1)*custSize, custPage*custSize).map(c => {
-                    const cust = M.customerOf(c.id)
-                    return (
-                      <tr key={c.id} onClick={() => setRoute("customers:" + c.id)}>
-                        <td className="code">{c.id}</td>
-                        <td>{cust?.name || c.id}</td>
-                        <td className="num">{M.num(c.qty)}</td>
-                        <td className="num"><strong>{M.thb(c.revenue)}</strong></td>
-                        <td className="num">{c.count}</td>
-                        <td className="num mono">{M.thbDec(c.lastPrice)}</td>
-                        <td>{c.last}</td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-              </div>
-              <Pagination total={customers.length} page={custPage} pageSize={custSize} onPageChange={setCustPage} onPageSizeChange={s => { setCustSize(s); setCustPage(1) }} />
-            </div>
-          )}
       </div>
 
       <BackToList setRoute={setRoute} target="products" label="กลับไปยังสินค้าทั้งหมด" />
