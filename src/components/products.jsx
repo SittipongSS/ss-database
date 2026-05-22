@@ -255,7 +255,7 @@ function ProductDetail({ sku, setRoute, goBack, canGoBack }) {
                 <h3 style={{ margin: "0 0 14px", fontSize: 13 }}>ข้อมูลสินค้า · Product Information</h3>
                 <dl className="kv-list" style={{ gridTemplateColumns: "160px minmax(0, 1fr)" }}>
                   <dt>รหัส SKU</dt><dd className="mono">{p.sku}</dd>
-                  {p.name && <><dt>ชื่อสินค้า</dt><dd style={{ wordBreak: "break-word" }}>{p.name}</dd></>}
+                  {(p.name || sampleLineItem?.desc) && <><dt>ชื่อสินค้า</dt><dd style={{ wordBreak: "break-word" }}>{p.name || sampleLineItem?.desc}</dd></>}
                   {p.formula && <><dt>ชื่อสูตร</dt><dd style={{ wordBreak: "break-word" }}>{p.formula}</dd></>}
                   {p.category && <><dt>หมวดสินค้า</dt><dd>
                     <span className="badge">{M.categoryLabel(p.sku, p.category)}</span>

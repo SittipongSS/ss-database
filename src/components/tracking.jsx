@@ -159,7 +159,7 @@ function SkuDetail({ sku, setRoute, onBack }) {
       {/* Chart */}
       <div className="card" style={{ marginBottom: 20 }}>
         <div className="card-head">
-          <h3>กราฟราคาตามเวลา · Price Trend</h3>
+          <h3>ประวัติราคา · Price Timeline</h3>
           <span className="more">{history.length} จุดข้อมูล</span>
         </div>
         <div className="chart-wrap">
