@@ -64,7 +64,7 @@ function OrdersList({ setRoute }) {
         case "dueDate":      return mul * (a.dueDate || "").localeCompare(b.dueDate || "")
         case "customer":     return mul * (a.customer || "").localeCompare(b.customer || "")
         case "customerName": return mul * ((a.customerName || M.customerOf(a.customer)?.name || "").localeCompare(b.customerName || M.customerOf(b.customer)?.name || ""))
-        case "qty":          return mul * (M.orderQty(a) - M.orderQty(b))
+        case "qty":          return mul * (a.items.length - b.items.length)
         case "total":        return mul * (M.orderTotal(a) - M.orderTotal(b))
         case "status":       return mul * (a.status || "").localeCompare(b.status || "")
         default:             return mul * (a.date || "").localeCompare(b.date || "")
@@ -133,7 +133,7 @@ function OrdersList({ setRoute }) {
               <SortTh col="date" sort={sort} onSort={toggleSort}>วันที่สั่ง</SortTh>
               <SortTh col="customer" sort={sort} onSort={toggleSort}>รหัสลูกค้า</SortTh>
               <SortTh col="customerName" sort={sort} onSort={toggleSort}>ชื่อลูกค้า</SortTh>
-              <SortTh col="qty" sort={sort} onSort={toggleSort} className="num">จำนวน</SortTh>
+              <SortTh col="qty" sort={sort} onSort={toggleSort} className="num">จำนวน SKU</SortTh>
               <SortTh col="total" sort={sort} onSort={toggleSort} className="num">ยอดรวม</SortTh>
               <SortTh col="dueDate" sort={sort} onSort={toggleSort}>กำหนดส่ง</SortTh>
               <SortTh col="status" sort={sort} onSort={toggleSort}>สถานะ</SortTh>
@@ -152,7 +152,7 @@ function OrdersList({ setRoute }) {
                   <td style={{ maxWidth: 240 }}>
                     <div style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c?.name || o.customerName || o.customer}</div>
                   </td>
-                  <td className="num">{M.num(M.orderQty(o))}</td>
+                  <td className="num">{M.num(o.items.length)}</td>
                   <td className="num"><strong>{M.thb(M.orderTotal(o))}</strong></td>
                   <td>{o.dueDate ? M.fmtDate(o.dueDate) : <span className="dim">—</span>}</td>
                   <td><StatusBadge status={o.status} /></td>
@@ -256,7 +256,7 @@ function InvoiceDetail({ doc, setRoute, goBack, canGoBack }) {
                   <td className="dim">{i + 1}</td>
                   <td className="code">{it.sku}</td>
                   <td>
-                    <div>{it.desc || p?.name || it.formula || it.sku}</div>
+                    <div>{p?.name || it.desc || p?.formula || it.sku}</div>
                   </td>
                   <td className="num">{M.num(it.qty)}</td>
                   <td className="dim">{p?.uom}</td>

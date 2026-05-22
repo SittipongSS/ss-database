@@ -39,14 +39,14 @@ const MOCK = (() => {
 
   function productDisplayName(sku) {
     if (displayNameCache[sku] != null) return displayNameCache[sku];
-    let found = null;
-    for (const o of orders) for (const it of o.items) {
-      if (it.sku === sku && it.desc) { found = it.desc; break; }
-    }
+    const p = productMap[sku];
+    let found = p?.name || null;
     if (!found) {
-      const p = productMap[sku];
-      found = (p && (p.name || p.formula)) || sku;
+      for (const o of orders) for (const it of o.items) {
+        if (it.sku === sku && it.desc) { found = it.desc; break; }
+      }
     }
+    found = found || p?.formula || sku;
     displayNameCache[sku] = found;
     return found;
   }

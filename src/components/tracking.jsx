@@ -61,12 +61,12 @@ function SkuBrowser({ skusWithHistory, selected, q, setQ, onSelect }) {
                   }}
                 >
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                      <span className="mono" style={{ fontSize: 12, fontWeight: 600 }}>{sku}</span>
-                      {pp?.category && <span className="badge" style={{ height: 18, fontSize: 10, padding: "0 6px" }}>{pp.category}</span>}
+                    <div style={{ fontWeight: 600, fontSize: 13, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {M.productDisplayName(sku)}
                     </div>
-                    <div style={{ fontSize: 12, color: "var(--text-2)", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      {pp?.name || sku}
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2, flexWrap: "wrap" }}>
+                      <span className="mono dim" style={{ fontSize: 11 }}>{sku}</span>
+                      {pp?.category && <span className="badge" style={{ height: 16, fontSize: 10, padding: "0 5px" }}>{pp.category}</span>}
                     </div>
                   </div>
                   <div style={{ textAlign: "right", flexShrink: 0 }}>
@@ -111,7 +111,7 @@ function SkuDetail({ sku, setRoute, onBack }) {
             <Icon name="chevronLeft" className="ico" /> กลับ
           </button>
           <div>
-            <div style={{ fontSize: 18, fontWeight: 600 }}>{product?.name || sku}</div>
+            <div style={{ fontSize: 18, fontWeight: 600 }}>{M.productDisplayName(sku)}</div>
             <div className="dim" style={{ fontSize: 12, marginTop: 4, display: "flex", gap: 10, flexWrap: "wrap" }}>
               <span className="mono">{sku}</span>
               {product?.category && <span>· {product.category}</span>}

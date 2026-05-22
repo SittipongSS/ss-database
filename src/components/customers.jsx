@@ -279,7 +279,7 @@ function CustomerDetail({ id, setRoute, goBack, canGoBack }) {
                       <tr key={s.sku} onClick={() => setRoute("products:" + s.sku)}>
                         <td className="code">{s.sku}</td>
                         <td style={{ maxWidth: 320 }}>
-                          <div style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p?.name || s.sku}</div>
+                          <div style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{M.productDisplayName(s.sku)}</div>
                           {p?.formula && p.formula !== p.name && <div className="dim" style={{ fontSize: 11, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>สูตร: {p.formula}</div>}
                         </td>
                         <td>{p?.category ? <span className="badge">{p.category}</span> : <span className="dim">—</span>}</td>
@@ -305,7 +305,7 @@ function CustomerDetail({ id, setRoute, goBack, canGoBack }) {
                 const p = M.productOf(s.sku)
                 return (
                   <div key={s.sku} style={{ padding: "10px 14px", borderBottom: i < Math.min(skuList.length - 1, 3) ? "1px solid var(--border)" : "none", cursor: "pointer" }} onClick={() => setRoute("products:" + s.sku)}>
-                    <div style={{ fontSize: 12.5, fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p?.name || s.sku}</div>
+                    <div style={{ fontSize: 12.5, fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{M.productDisplayName(s.sku)}</div>
                     <div className="dim mono" style={{ fontSize: 10.5, marginTop: 2 }}>{s.sku}</div>
                     <div className="dim" style={{ fontSize: 11, marginTop: 1 }}>{s.count} ครั้ง · {M.thb(s.revenue)}</div>
                   </div>
