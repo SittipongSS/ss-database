@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react'
+import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import MOCK from './lib/mock.js'
 import { useTweaks, TweaksPanel, TweakSection, TweakRadio, TweakSelect } from './components/tweaks.jsx'
 import { Sidebar, Topbar } from './components/shell.jsx'
@@ -18,11 +18,11 @@ const TWEAK_DEFAULTS = {
 const SHEETS_URL = import.meta.env.VITE_SHEETS_URL
 
 // Bump this when the API schema changes to clear stale localStorage cache
-const CACHE_VERSION = 'v2'
+const CACHE_VERSION = 'v3'
 ;(() => {
   try {
     if (localStorage.getItem('ss_cache_ver') !== CACHE_VERSION) {
-      ['ss_customers', 'ss_products', 'ss_orders', 'ss_data'].forEach(k => localStorage.removeItem(k))
+      ['ss_all', 'ss_customers', 'ss_products', 'ss_orders', 'ss_data'].forEach(k => localStorage.removeItem(k))
       localStorage.setItem('ss_cache_ver', CACHE_VERSION)
     }
   } catch(e) {}
@@ -43,66 +43,46 @@ function App() {
   const [query, setQuery] = useState("")
   const [mobileOpen, setMobileOpen] = useState(false)
   const [tweaks, setTweak] = useTweaks(TWEAK_DEFAULTS)
+  // true once data is available (from cache or API) — used for loading bar
+  const [ready, setReady] = useState(() => {
+    try { return !!localStorage.getItem('ss_all') } catch(e) { return false }
+  })
 
   // page derived early — used in effects deps AND in render
   const [page, param] = route.split(":")
 
-  const loadedRef = useRef({ customers: false, products: false, orders: false })
-
   const reloadMock = useCallback((data) => {
     MOCK.reload(data)
+    setReady(true)
     forceUpdate(v => v + 1)
   }, [])
 
-  // Fetch one sheet-tab: load cache instantly, then refresh in background
-  const fetchSheet = useCallback(async (sheetParam) => {
-    const cacheKey = `ss_${sheetParam}`
+  // Fetch all sheets in one call: show cache instantly, then refresh from API
+  const fetchSheet = useCallback(async () => {
     try {
-      const cached = localStorage.getItem(cacheKey)
+      const cached = localStorage.getItem('ss_all')
       if (cached) reloadMock(JSON.parse(cached))
     } catch(e) {}
     try {
-      const r = await fetch(`/api/sheets?sheet=${sheetParam}`)
+      const r = await fetch('/api/sheets?sheet=all')
       const data = await r.json()
       if (data && !data.error) {
         reloadMock(data)
-        try { localStorage.setItem(cacheKey, JSON.stringify(data)) } catch(e) {}
+        try { localStorage.setItem('ss_all', JSON.stringify(data)) } catch(e) {}
       }
-    } catch(e) { console.error('[sheets] fetch failed', sheetParam, e) }
+    } catch(e) { console.error('[sheets] fetch failed', e) }
   }, [reloadMock])
 
-  // On mount: load customers + products immediately (small/fast)
+  // On mount: fetch all data in one request
   useEffect(() => {
     if (!SHEETS_URL) return
-    // Migrate old full-cache key on first run after lazy-loading upgrade
-    try {
-      const full = localStorage.getItem('ss_data')
-      if (full) { reloadMock(JSON.parse(full)); localStorage.removeItem('ss_data') }
-    } catch(e) {}
-    loadedRef.current.customers = true
-    loadedRef.current.products  = true
-    fetchSheet('customers')
-    fetchSheet('products')
-  }, [fetchSheet, reloadMock])
+    fetchSheet()
+  }, [fetchSheet])
 
-  // Lazy-load orders when user first visits dashboard / orders / tracking
+  // Auto-refresh every 5 minutes
   useEffect(() => {
     if (!SHEETS_URL) return
-    const needsOrders = page === 'dashboard' || page === 'orders' || page === 'tracking'
-    if (needsOrders && !loadedRef.current.orders) {
-      loadedRef.current.orders = true
-      fetchSheet('orders')
-    }
-  }, [page, fetchSheet])
-
-  // Auto-refresh all loaded sheets every 5 minutes
-  useEffect(() => {
-    if (!SHEETS_URL) return
-    const id = setInterval(() => {
-      fetchSheet('customers')
-      fetchSheet('products')
-      if (loadedRef.current.orders) fetchSheet('orders')
-    }, 5 * 60 * 1000)
+    const id = setInterval(fetchSheet, 5 * 60 * 1000)
     return () => clearInterval(id)
   }, [fetchSheet])
 
@@ -178,6 +158,9 @@ function App() {
       />
       <div className="scrim" onClick={() => setMobileOpen(false)} />
       <div className="main">
+        {SHEETS_URL && !ready && (
+          <div className="loading-bar"><div className="loading-bar-fill" /></div>
+        )}
         <Topbar
           crumbs={crumbs}
           setRoute={setRoute}

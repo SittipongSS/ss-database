@@ -531,3 +531,24 @@ button { font-family: inherit; }
   .menu-btn { display: none !important; }
   .scrim { display: none !important; }
 }
+
+
+/* ── Loading bar ───────────────────────────────────────────── */
+.loading-bar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  z-index: 9999;
+  background: var(--border);
+  overflow: hidden;
+}
+.loading-bar-fill {
+  height: 100%;
+  width: 40%;
+  background: var(--accent);
+  animation: loading-slide 1.4s ease-in-out infinite;
+}
+@keyframes loading-slide {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(350%); }
+}
