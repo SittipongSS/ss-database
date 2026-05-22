@@ -38,6 +38,7 @@ function SkuBrowser({ skusWithHistory, selected, q, setQ, onSelect }) {
           </div>
         </div>
 
+        <div style={{ maxHeight: "calc(100vh - 220px)", overflowY: "auto" }}>
         {visibleSkus.length === 0
           ? <div className="empty">ไม่พบ SKU ที่ตรงกัน</div>
           : visibleSkus.map(sku => {
@@ -82,6 +83,7 @@ function SkuBrowser({ skusWithHistory, selected, q, setQ, onSelect }) {
               )
             })
         }
+        </div>
       </div>
     </>
   )
