@@ -9,10 +9,16 @@ export function fmtChartDate(iso) {
   return `${+m[3]}/${+m[2]}/${yy}`
 }
 
-export function LineChart({ data, height = 220, accentColor = "var(--accent)", showGrid = true, formatY, formatX }) {
+export function LineChart({ data, height = 220, accentColor = "var(--accent)", showGrid = true, compact = false, formatY, formatX }) {
   if (!data || data.length === 0) return null
   const fluid = height === "100%"
-  const W = 800, H = fluid ? 200 : height, PADL = 64, PADR = 20, PADT = 16, PADB = 28
+  // compact = no axes, no labels, minimal padding → fits flush in mini cards
+  const W = 800
+  const H = fluid ? 200 : height
+  const PADL = compact ? 4 : 64
+  const PADR = compact ? 4 : 20
+  const PADT = compact ? 4 : 16
+  const PADB = compact ? 4 : 28
   const ys = data.map(d => d.y)
   const minY = Math.min(...ys), maxY = Math.max(...ys)
   const yRange = maxY - minY || 1
@@ -24,16 +30,17 @@ export function LineChart({ data, height = 220, accentColor = "var(--accent)", s
   const yTicks = 4
   const ticks = Array.from({ length: yTicks + 1 }, (_, i) => yMin + (i / yTicks) * (yMax - yMin))
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={fluid ? "100%" : undefined}
+    <svg viewBox={`0 0 ${W} ${H}`} width="100%"
+      height={fluid ? "100%" : undefined}
       preserveAspectRatio={fluid ? "none" : "xMidYMid meet"}
-      style={fluid ? { display: "block" } : undefined}>
+      style={fluid ? { display: "block", height: "100%" } : undefined}>
       <defs>
         <linearGradient id="lineGrad" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor={accentColor} stopOpacity="0.18" />
           <stop offset="100%" stopColor={accentColor} stopOpacity="0" />
         </linearGradient>
       </defs>
-      {showGrid && ticks.map((t, i) => (
+      {!compact && showGrid && ticks.map((t, i) => (
         <g key={i}>
           <line x1={PADL} x2={W - PADR} y1={yScale(t)} y2={yScale(t)} stroke="var(--border)" strokeDasharray={i === 0 ? "" : "2 3"} />
           <text x={PADL - 8} y={yScale(t) + 4} fill="var(--text-3)" fontSize="10" textAnchor="end" fontFamily="var(--font-mono)">{formatY ? formatY(t) : Math.round(t)}</text>
@@ -44,7 +51,7 @@ export function LineChart({ data, height = 220, accentColor = "var(--accent)", s
       {data.map((d, i) => (
         <circle key={i} cx={xScale(i)} cy={yScale(d.y)} r="2.5" fill="var(--panel)" stroke={accentColor} strokeWidth="1.5" />
       ))}
-      {data.map((d, i) => {
+      {!compact && data.map((d, i) => {
         const step = Math.max(1, Math.ceil(data.length / 6))
         if (i % step !== 0) return null
         return <text key={i} x={xScale(i)} y={H - 10} fill="var(--text-3)" fontSize="10" textAnchor="middle" fontFamily="var(--font-mono)">{formatX ? formatX(d.x, i) : d.x}</text>

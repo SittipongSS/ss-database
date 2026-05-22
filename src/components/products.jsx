@@ -247,8 +247,8 @@ function ProductDetail({ sku, setRoute, goBack, canGoBack }) {
                 <h3 style={{ fontSize: 12 }}>ประวัติราคา · Price Timeline</h3>
                 <span className="more" style={{ cursor: "pointer", fontSize: 11 }} onClick={() => setTab("price")}>ดูทั้งหมด</span>
               </div>
-              <div className="chart-wrap" style={{ flex: 1, padding: "4px 4px 8px", minHeight: 0 }}>
-                <LineChart data={chartData} height="100%" formatY={v => "฿" + v.toFixed(v >= 100 ? 0 : 2)} formatX={fmtChartDate} />
+              <div className="chart-wrap" style={{ flex: 1, padding: "4px", minHeight: 0 }}>
+                <LineChart data={chartData} height="100%" compact formatY={v => "฿" + v.toFixed(v >= 100 ? 0 : 2)} formatX={fmtChartDate} />
               </div>
             </div>
           )}
@@ -269,7 +269,7 @@ function ProductDetail({ sku, setRoute, goBack, canGoBack }) {
                 <h3 style={{ margin: "0 0 14px", fontSize: 13 }}>ข้อมูลสินค้า · Product Information</h3>
                 <dl className="kv-list" style={{ gridTemplateColumns: "160px minmax(0, 1fr)" }}>
                   <dt>รหัส SKU</dt><dd className="mono">{p.sku}</dd>
-                  {p.name && p.name !== p.formula && <><dt>ชื่อสินค้า</dt><dd style={{ wordBreak: "break-word" }}>{p.name}</dd></>}
+                  {p.name && <><dt>ชื่อสินค้า</dt><dd style={{ wordBreak: "break-word" }}>{p.name}</dd></>}
                   {p.formula && <><dt>ชื่อสูตร</dt><dd style={{ wordBreak: "break-word" }}>{p.formula}</dd></>}
                   {p.category && <><dt>หมวดสินค้า</dt><dd>
                     <span className="badge">{M.categoryLabel(p.sku, p.category)}</span>
