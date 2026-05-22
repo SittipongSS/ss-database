@@ -2,7 +2,7 @@ import React from 'react'
 import MOCK from '../lib/mock.js'
 import { Icon } from './icons.jsx'
 import { LineChart, fmtChartDate } from './charts.jsx'
-import { StatusBadge } from './ui.jsx'
+import { StatusBadge, Pagination } from './ui.jsx'
 
 // ── Price History Page ───────────────────────────────────────
 
@@ -93,6 +93,8 @@ function SkuDetail({ sku, setRoute, onBack }) {
   const product  = M.productOf(sku)
   const history  = M.priceHistoryOf(sku)
   const chartData = history.map(h => ({ x: h.date, y: h.price, raw: h }))
+  const [histPage, setHistPage] = React.useState(1)
+  const [histSize, setHistSize] = React.useState(25)
 
   const latestPrice = history.length ? history[history.length - 1].price : null
   const minPrice    = history.length ? Math.min(...history.map(h => h.price)) : null
@@ -175,47 +177,55 @@ function SkuDetail({ sku, setRoute, onBack }) {
         </div>
         {history.length === 0
           ? <div className="empty">ยังไม่มีประวัติราคา</div>
-          : (
-            <div className="tbl-scroll">
-              <table className="tbl">
-                <thead>
-                  <tr>
-                    <th>วันที่</th>
-                    <th>เลขเอกสาร</th>
-                    <th>รหัสลูกค้า</th>
-                    <th>ชื่อบริษัท</th>
-                    <th className="num">ราคา</th>
-                    <th className="num">เปลี่ยน</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {[...history].reverse().map((h, i, arr) => {
-                    const prev = arr[i + 1]
-                    const diff = prev ? ((h.price - prev.price) / prev.price) * 100 : null
-                    const cust = M.customerOf(h.customer)
-                    return (
-                      <tr key={i} onClick={() => h.doc && setRoute("orders:" + h.doc)}>
-                        <td>{M.fmtDate(h.date)}</td>
-                        <td className="code">{h.doc || "—"}</td>
-                        <td className="code dim">{h.customer}</td>
-                        <td style={{ maxWidth: 260, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                          {cust?.name || <span className="dim">—</span>}
-                        </td>
-                        <td className="num mono"><strong>{M.thb(h.price)}</strong></td>
-                        <td className="num">
-                          {diff != null && Math.abs(diff) > 0.01
-                            ? <span className={"badge " + (diff > 0 ? "amber" : "green")}>{diff > 0 ? "+" : ""}{diff.toFixed(1)}%</span>
-                            : diff === null
-                              ? <span className="dim" style={{ fontSize: 11 }}>เริ่มต้น</span>
-                              : <span className="dim">—</span>}
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
+          : (() => {
+              const reversed = [...history].reverse()
+              return (
+                <>
+                  <div className="tbl-scroll">
+                    <table className="tbl">
+                      <thead>
+                        <tr>
+                          <th>วันที่</th>
+                          <th>เลขเอกสาร</th>
+                          <th>รหัสลูกค้า</th>
+                          <th>ชื่อบริษัท</th>
+                          <th className="num">ราคา</th>
+                          <th className="num">เปลี่ยน</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {reversed.slice((histPage-1)*histSize, histPage*histSize).map((h, i) => {
+                          const globalIdx = (histPage-1)*histSize + i
+                          const prev = reversed[globalIdx + 1]
+                          const diff = prev ? ((h.price - prev.price) / prev.price) * 100 : null
+                          const cust = M.customerOf(h.customer)
+                          return (
+                            <tr key={globalIdx} onClick={() => h.doc && setRoute("orders:" + h.doc)}>
+                              <td>{M.fmtDate(h.date)}</td>
+                              <td className="code">{h.doc || "—"}</td>
+                              <td className="code dim">{h.customer}</td>
+                              <td style={{ maxWidth: 260, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                                {cust?.name || <span className="dim">—</span>}
+                              </td>
+                              <td className="num mono"><strong>{M.thb(h.price)}</strong></td>
+                              <td className="num">
+                                {diff != null && Math.abs(diff) > 0.01
+                                  ? <span className={"badge " + (diff > 0 ? "amber" : "green")}>{diff > 0 ? "+" : ""}{diff.toFixed(1)}%</span>
+                                  : diff === null
+                                    ? <span className="dim" style={{ fontSize: 11 }}>เริ่มต้น</span>
+                                    : <span className="dim">—</span>}
+                              </td>
+                            </tr>
+                          )
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                  <Pagination total={history.length} page={histPage} pageSize={histSize} onPageChange={setHistPage} onPageSizeChange={s => { setHistSize(s); setHistPage(1) }} />
+                </>
+              )
+            })()
+        }
       </div>
     </>
   )

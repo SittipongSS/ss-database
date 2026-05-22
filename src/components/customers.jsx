@@ -128,6 +128,10 @@ function CustomerDetail({ id, setRoute, goBack, canGoBack }) {
   const M = MOCK
   const c = M.customerOf(id)
   const [tab, setTab] = React.useState("info")
+  const [ordPage, setOrdPage] = React.useState(1)
+  const [ordSize, setOrdSize] = React.useState(25)
+  const [skuPage, setSkuPage] = React.useState(1)
+  const [skuSize, setSkuSize] = React.useState(25)
   if (!c) return <div className="page"><div className="empty">ไม่พบลูกค้ารหัส {id}</div></div>
 
   const orders = M.ordersOf(id)
@@ -248,7 +252,7 @@ function CustomerDetail({ id, setRoute, goBack, canGoBack }) {
               <table className="tbl">
                 <thead><tr><th>เลขเอกสาร</th><th>วันที่</th><th className="num">ยอดรวม</th><th>สถานะ</th></tr></thead>
                 <tbody>
-                  {orders.map(o => (
+                  {orders.slice((ordPage-1)*ordSize, ordPage*ordSize).map(o => (
                     <tr key={o.doc + o.date} onClick={() => setRoute("orders:" + o.doc)}>
                       <td className="code">{o.doc}</td>
                       <td>{M.fmtDate(o.date)}</td>
@@ -259,6 +263,7 @@ function CustomerDetail({ id, setRoute, goBack, canGoBack }) {
                 </tbody>
               </table>
               </div>
+              <Pagination total={orders.length} page={ordPage} pageSize={ordSize} onPageChange={setOrdPage} onPageSizeChange={s => { setOrdSize(s); setOrdPage(1) }} />
             </div>
           )}
 
@@ -268,7 +273,7 @@ function CustomerDetail({ id, setRoute, goBack, canGoBack }) {
               <table className="tbl">
                 <thead><tr><th>SKU</th><th>ชื่อสินค้า / สูตร</th><th>หมวด</th><th className="num">ราคา</th></tr></thead>
                 <tbody>
-                  {skuList.map(s => {
+                  {skuList.slice((skuPage-1)*skuSize, skuPage*skuSize).map(s => {
                     const p = M.productOf(s.sku)
                     return (
                       <tr key={s.sku} onClick={() => setRoute("products:" + s.sku)}>
@@ -285,6 +290,7 @@ function CustomerDetail({ id, setRoute, goBack, canGoBack }) {
                 </tbody>
               </table>
               </div>
+              <Pagination total={skuList.length} page={skuPage} pageSize={skuSize} onPageChange={setSkuPage} onPageSizeChange={s => { setSkuSize(s); setSkuPage(1) }} />
             </div>
           )}
 

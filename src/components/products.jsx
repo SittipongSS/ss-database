@@ -166,6 +166,12 @@ function ProductDetail({ sku, setRoute, goBack, canGoBack }) {
   const M = MOCK
   const p = M.productOf(sku)
   const [tab, setTab] = React.useState("info")
+  const [pricePage, setPricePage] = React.useState(1)
+  const [priceSize, setPriceSize] = React.useState(25)
+  const [ordPage, setOrdPage] = React.useState(1)
+  const [ordSize, setOrdSize] = React.useState(25)
+  const [custPage, setCustPage] = React.useState(1)
+  const [custSize, setCustSize] = React.useState(25)
 
   if (!p) return <div className="page"><div className="empty">ไม่พบสินค้ารหัส {sku}</div></div>
 
@@ -305,12 +311,14 @@ function ProductDetail({ sku, setRoute, goBack, canGoBack }) {
                 <table className="tbl">
                   <thead><tr><th>วันที่</th><th>เอกสาร</th><th>รหัสลูกค้า</th><th>ชื่อบริษัท</th><th className="num">ราคา</th><th className="num">เทียบครั้งก่อน</th></tr></thead>
                   <tbody>
-                    {[...history].reverse().map((h, i, arr) => {
-                      const next = arr[i + 1]
+                    {[...history].reverse().slice((pricePage-1)*priceSize, pricePage*priceSize).map((h, i, arr) => {
+                      const globalIdx = (pricePage-1)*priceSize + i
+                      const revHistory = [...history].reverse()
+                      const next = revHistory[globalIdx + 1]
                       const diff = next ? ((h.price - next.price) / next.price) * 100 : null
                       const cust = M.customerOf(h.customer)
                       return (
-                        <tr key={i} onClick={() => h.doc && setRoute("orders:" + h.doc)}>
+                        <tr key={globalIdx} onClick={() => h.doc && setRoute("orders:" + h.doc)}>
                           <td>{M.fmtDate(h.date)}</td>
                           <td className="code">{h.doc || "—"}</td>
                           <td className="code" style={{ cursor: "pointer" }} onClick={(e) => { e.stopPropagation(); setRoute("customers:" + h.customer) }}>{h.customer}</td>
@@ -327,6 +335,7 @@ function ProductDetail({ sku, setRoute, goBack, canGoBack }) {
                   </tbody>
                 </table>
                 </div>
+                <Pagination total={history.length} page={pricePage} pageSize={priceSize} onPageChange={setPricePage} onPageSizeChange={s => { setPriceSize(s); setPricePage(1) }} />
               </div>
             </>
           )}
@@ -337,7 +346,7 @@ function ProductDetail({ sku, setRoute, goBack, canGoBack }) {
               <table className="tbl">
                 <thead><tr><th>เลขเอกสาร</th><th>วันที่</th><th>ลูกค้า</th><th className="num">จำนวน</th><th className="num">ราคา/หน่วย</th><th className="num">รวม</th><th>สถานะ</th></tr></thead>
                 <tbody>
-                  {ordersOfSku.map(o => {
+                  {ordersOfSku.slice((ordPage-1)*ordSize, ordPage*ordSize).map(o => {
                     const it = o.items[0]
                     return (
                       <tr key={o.doc} onClick={() => setRoute("orders:" + o.doc)}>
@@ -354,6 +363,7 @@ function ProductDetail({ sku, setRoute, goBack, canGoBack }) {
                 </tbody>
               </table>
               </div>
+              <Pagination total={ordersOfSku.length} page={ordPage} pageSize={ordSize} onPageChange={setOrdPage} onPageSizeChange={s => { setOrdSize(s); setOrdPage(1) }} />
             </div>
           )}
 
@@ -363,7 +373,7 @@ function ProductDetail({ sku, setRoute, goBack, canGoBack }) {
               <table className="tbl">
                 <thead><tr><th>รหัส</th><th>ลูกค้า</th><th className="num">จำนวนรวม</th><th className="num">รายได้รวม</th><th className="num">ครั้ง</th><th className="num">ราคาล่าสุด</th><th>สั่งล่าสุด</th></tr></thead>
                 <tbody>
-                  {customers.map(c => {
+                  {customers.slice((custPage-1)*custSize, custPage*custSize).map(c => {
                     const cust = M.customerOf(c.id)
                     return (
                       <tr key={c.id} onClick={() => setRoute("customers:" + c.id)}>
@@ -380,6 +390,7 @@ function ProductDetail({ sku, setRoute, goBack, canGoBack }) {
                 </tbody>
               </table>
               </div>
+              <Pagination total={customers.length} page={custPage} pageSize={custSize} onPageChange={setCustPage} onPageSizeChange={s => { setCustSize(s); setCustPage(1) }} />
             </div>
           )}
       </div>
