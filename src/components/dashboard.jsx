@@ -162,14 +162,19 @@ function SalesKpiCard() {
 
 function ShipStatusCard() {
   const M = MOCK
-  const pending   = M.orders.filter(o => o.status === "pending").length
-  const shipped   = M.orders.filter(o => o.status === "shipped").length
-  const delivered = M.orders.filter(o => o.status === "delivered").length
+  const [period, setPeriod] = React.useState("year")
+  const filtered = React.useMemo(() => filterOrdersByPeriod(M.orders, period, M.today), [period, M.orders])
+  const pending   = filtered.filter(o => o.status === "pending").length
+  const shipped   = filtered.filter(o => o.status === "shipped").length
+  const delivered = filtered.filter(o => o.status === "delivered").length
   return (
     <div className="stat">
-      <div className="stat-label">สถานะส่ง</div>
+      <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 6, marginBottom: 6 }}>
+        <div className="stat-label" style={{ margin: 0 }}>สถานะส่ง</div>
+        <PeriodChips value={period} onChange={setPeriod} options={["all", "month", "year"]} />
+      </div>
       <div className="stat-value">{M.num(delivered)}</div>
-      <div className="dim" style={{ fontSize: 11, marginTop: 4 }}>ออเดอร์ส่งเรียบร้อย</div>
+      <div className="dim" style={{ fontSize: 11, marginTop: 4 }}>ออเดอร์ส่งเรียบร้อย · {periodLabel(period, M.today)}</div>
       <div style={{ display: "flex", gap: 6, marginTop: 8, flexWrap: "wrap" }}>
         <span className="badge amber"><span className="dot" />รอดำเนินการ {M.num(pending)}</span>
         <span className="badge blue"><span className="dot" />พร้อมส่ง {M.num(shipped)}</span>
