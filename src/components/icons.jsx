@@ -27,6 +27,7 @@ const ICON_PATHS = {
   receipt: <><path d="M3 1.5 V14.5 L5 13 L7 14.5 L9 13 L11 14.5 L13 13 V1.5 Z"/><path d="M5.5 5 H10.5 M5.5 8 H10.5 M5.5 11 H8.5"/></>,
   alert: <><path d="M8 2 L14 13 H2 Z"/><path d="M8 6 V9.5"/><circle cx="8" cy="11.5" r="0.7" fill="currentColor"/></>,
   chevronDown: <><path d="M4 6 L8 10 L12 6"/></>,
+  chevronLeft: <><path d="M10 4 L6 8 L10 12"/></>,
   chevronRight: <><path d="M6 4 L10 8 L6 12"/></>,
   sun: <><circle cx="8" cy="8" r="3"/><path d="M8 1 V3 M8 13 V15 M1 8 H3 M13 8 H15 M3.2 3.2 L4.6 4.6 M11.4 11.4 L12.8 12.8 M12.8 3.2 L11.4 4.6 M4.6 11.4 L3.2 12.8"/></>,
   moon: <><path d="M12 4A6 6 0 1 0 6 14A4 4 0 0 1 12 4Z"/></>,

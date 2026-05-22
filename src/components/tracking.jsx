@@ -6,15 +6,8 @@ import { StatusBadge } from './ui.jsx'
 
 // ── Price History Page ───────────────────────────────────────
 
-function PriceHistoryPage({ initialSku, setRoute }) {
+function SkuBrowser({ skusWithHistory, selected, q, setQ, onSelect }) {
   const M = MOCK
-  const skusWithHistory = React.useMemo(() => M.skusWithPriceHistory(), [M.orders])
-  const [selected, setSelected] = React.useState(
-    initialSku && skusWithHistory.includes(initialSku) ? initialSku : skusWithHistory[0]
-  )
-  const [q, setQ] = React.useState("")
-  const [showList, setShowList] = React.useState(!selected)
-
   const visibleSkus = React.useMemo(() => {
     const qq = q.toLowerCase().trim()
     const list = qq
@@ -29,61 +22,25 @@ function PriceHistoryPage({ initialSku, setRoute }) {
     return list.slice(0, 200)
   }, [q, skusWithHistory])
 
-  const product = M.productOf(selected)
-  const history = selected ? M.priceHistoryOf(selected) : []
-  const chartData = history.map(h => ({ x: h.date, y: h.price, raw: h }))
-
-  const latestPrice = history.length ? history[history.length - 1].price : null
-  const minPrice    = history.length ? Math.min(...history.map(h => h.price)) : null
-  const maxPrice    = history.length ? Math.max(...history.map(h => h.price)) : null
-  const firstPrice  = history.length ? history[0].price : null
-  const totalMove   = (firstPrice && latestPrice) ? ((latestPrice - firstPrice) / firstPrice) * 100 : null
-
-  const handleSelect = (sku) => {
-    setSelected(sku)
-    setShowList(false)
-    setQ("")
-  }
-
   return (
-    <div className="page">
-      <div className="page-head">
-        <div>
-          <h1 className="page-title">ประวัติราคา · Price History</h1>
-          <p className="page-sub">ติดตามราคาขายจริงของแต่ละ SKU จากออเดอร์ทั้งหมด</p>
-        </div>
-      </div>
-
-      {/* SKU Search / Selector */}
-      <div className="card" style={{ marginBottom: 20 }}>
-        <div style={{ padding: "12px 16px", borderBottom: showList ? "1px solid var(--border)" : "none" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <div className="search-bar" style={{ flex: 1, margin: 0, maxWidth: "100%" }}>
-              <Icon name="search" className="icon-l" />
-              <input
-                value={q}
-                onChange={e => { setQ(e.target.value); setShowList(true) }}
-                onFocus={() => setShowList(true)}
-                placeholder="ค้นหา SKU · ชื่อสินค้า · หมวด…"
-                style={{ height: 36 }}
-              />
-            </div>
-            {selected && !showList && (
-              <button className="btn ghost" onClick={() => setShowList(true)} style={{ flexShrink: 0, gap: 6 }}>
-                <Icon name="products" className="ico" />
-                <span className="mono" style={{ fontSize: 12 }}>{selected}</span>
-                <Icon name="chevronDown" className="ico" />
-              </button>
-            )}
+    <>
+      <div className="card" style={{ marginBottom: 0 }}>
+        <div style={{ padding: "12px 16px", borderBottom: "1px solid var(--border)" }}>
+          <div className="search-bar" style={{ margin: 0, maxWidth: "100%" }}>
+            <Icon name="search" className="icon-l" />
+            <input
+              autoFocus
+              value={q}
+              onChange={e => setQ(e.target.value)}
+              placeholder="ค้นหา SKU · ชื่อสินค้า · หมวด…"
+              style={{ height: 38 }}
+            />
           </div>
         </div>
 
-        {showList && (
-          <div style={{ maxHeight: 320, overflowY: "auto" }}>
-            {visibleSkus.length === 0 && (
-              <div className="empty">ไม่พบ SKU ที่ตรงกัน</div>
-            )}
-            {visibleSkus.map(sku => {
+        {visibleSkus.length === 0
+          ? <div className="empty">ไม่พบ SKU ที่ตรงกัน</div>
+          : visibleSkus.map(sku => {
               const pp = M.productOf(sku)
               const h  = M.priceHistoryOf(sku)
               const latest   = h[h.length - 1]
@@ -93,19 +50,19 @@ function PriceHistoryPage({ initialSku, setRoute }) {
               return (
                 <div
                   key={sku}
-                  onClick={() => handleSelect(sku)}
+                  onClick={() => onSelect(sku)}
                   style={{
                     display: "flex", alignItems: "center", gap: 12,
-                    padding: "10px 16px",
+                    padding: "11px 16px",
                     borderBottom: "1px solid var(--border)",
                     cursor: "pointer",
                     background: selected === sku ? "var(--panel-2)" : "transparent",
-                    borderLeft: selected === sku ? "2px solid var(--accent)" : "2px solid transparent",
+                    borderLeft: selected === sku ? "3px solid var(--accent)" : "3px solid transparent",
                   }}
                 >
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <span className="mono" style={{ fontSize: 11, fontWeight: 600 }}>{sku}</span>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                      <span className="mono" style={{ fontSize: 12, fontWeight: 600 }}>{sku}</span>
                       {pp?.category && <span className="badge" style={{ height: 18, fontSize: 10, padding: "0 6px" }}>{pp.category}</span>}
                     </div>
                     <div style={{ fontSize: 12, color: "var(--text-2)", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
@@ -113,144 +70,202 @@ function PriceHistoryPage({ initialSku, setRoute }) {
                     </div>
                   </div>
                   <div style={{ textAlign: "right", flexShrink: 0 }}>
-                    <div className="mono" style={{ fontSize: 12, fontWeight: 600 }}>{M.thb(latest?.price)}</div>
+                    <div className="mono" style={{ fontSize: 13, fontWeight: 700 }}>{M.thb(latest?.price)}</div>
                     {move !== 0 && (
                       <span className={"badge " + (move > 0 ? "amber" : "green")} style={{ height: 18, fontSize: 10, padding: "0 6px" }}>
                         {move > 0 ? "+" : ""}{move.toFixed(1)}%
                       </span>
                     )}
+                    <div className="dim" style={{ fontSize: 10, marginTop: 2 }}>{h.length} ครั้ง</div>
                   </div>
                 </div>
               )
-            })}
+            })
+        }
+      </div>
+    </>
+  )
+}
+
+function SkuDetail({ sku, setRoute, onBack }) {
+  const M = MOCK
+  const product  = M.productOf(sku)
+  const history  = M.priceHistoryOf(sku)
+  const chartData = history.map(h => ({ x: h.date, y: h.price, raw: h }))
+
+  const latestPrice = history.length ? history[history.length - 1].price : null
+  const minPrice    = history.length ? Math.min(...history.map(h => h.price)) : null
+  const maxPrice    = history.length ? Math.max(...history.map(h => h.price)) : null
+  const firstPrice  = history.length ? history[0].price : null
+  const totalMove   = (firstPrice && latestPrice) ? ((latestPrice - firstPrice) / firstPrice) * 100 : null
+
+  return (
+    <>
+      {/* Back + Header */}
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, marginBottom: 16, flexWrap: "wrap" }}>
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+          <button className="btn ghost" onClick={onBack} style={{ marginTop: 2, gap: 4, flexShrink: 0 }}>
+            <Icon name="chevronLeft" className="ico" /> กลับ
+          </button>
+          <div>
+            <div style={{ fontSize: 18, fontWeight: 600 }}>{product?.name || sku}</div>
+            <div className="dim" style={{ fontSize: 12, marginTop: 4, display: "flex", gap: 10, flexWrap: "wrap" }}>
+              <span className="mono">{sku}</span>
+              {product?.category && <span>· {product.category}</span>}
+              {product?.brand && <span>· {product.brand}</span>}
+            </div>
           </div>
-        )}
+        </div>
+        <button className="btn" onClick={() => setRoute("products:" + sku)}>
+          เปิดหน้าสินค้า <Icon name="chevronRight" className="ico" />
+        </button>
       </div>
 
-      {/* Detail Section */}
-      {selected && !showList && (
-        <>
-          {/* Header */}
-          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, marginBottom: 16, flexWrap: "wrap" }}>
-            <div>
-              <div style={{ fontSize: 18, fontWeight: 600 }}>{product?.name || selected}</div>
-              <div className="dim" style={{ fontSize: 12, marginTop: 4, display: "flex", gap: 10, flexWrap: "wrap" }}>
-                <span className="mono">{selected}</span>
-                {product?.category && <span>· {product.category}</span>}
-                {product?.brand && <span>· {product.brand}</span>}
-              </div>
-            </div>
-            <button className="btn" onClick={() => setRoute("products:" + selected)}>
-              เปิดหน้าสินค้า <Icon name="chevronRight" className="ico" />
-            </button>
+      {/* KPI Cards */}
+      <div className="kpi-row" style={{ marginBottom: 20 }}>
+        <div className="stat">
+          <div className="stat-label">ราคาล่าสุด</div>
+          <div className="stat-value">{latestPrice != null ? M.thb(latestPrice) : "—"}</div>
+          <div className="dim" style={{ fontSize: 11, marginTop: 4 }}>
+            {history.length > 0 ? M.fmtDate(history[history.length - 1].date) : ""}
           </div>
-
-          {/* KPI Cards */}
-          <div className="kpi-row" style={{ marginBottom: 20 }}>
-            <div className="stat">
-              <div className="stat-label">ราคาล่าสุด</div>
-              <div className="stat-value">{latestPrice != null ? M.thb(latestPrice) : "—"}</div>
-              <div className="dim" style={{ fontSize: 11, marginTop: 4 }}>
-                {history.length > 0 ? M.fmtDate(history[history.length - 1].date) : ""}
-              </div>
-            </div>
-            <div className="stat">
-              <div className="stat-label">เปลี่ยนแปลงรวม</div>
-              <div className="stat-value" style={{ color: totalMove == null ? undefined : totalMove > 0 ? "var(--amber)" : totalMove < 0 ? "var(--green)" : undefined }}>
-                {totalMove != null ? `${totalMove > 0 ? "+" : ""}${totalMove.toFixed(1)}%` : "—"}
-              </div>
-              <div className="dim" style={{ fontSize: 11, marginTop: 4 }}>
-                {firstPrice != null ? `${M.thb(firstPrice)} → ${M.thb(latestPrice)}` : ""}
-              </div>
-            </div>
-            <div className="stat">
-              <div className="stat-label">ราคาต่ำสุด / สูงสุด</div>
-              <div className="stat-value" style={{ fontSize: 18 }}>
-                {minPrice != null ? M.thb(minPrice) : "—"}
-              </div>
-              <div className="dim" style={{ fontSize: 11, marginTop: 4 }}>
-                สูงสุด {maxPrice != null ? M.thb(maxPrice) : "—"}
-              </div>
-            </div>
-            <div className="stat">
-              <div className="stat-label">จำนวนครั้งที่ขาย</div>
-              <div className="stat-value">{M.num(history.length)}</div>
-              <div className="dim" style={{ fontSize: 11, marginTop: 4 }}>
-                {history.length > 0 ? `${M.fmtDate(history[0].date)} – ${M.fmtDate(history[history.length - 1].date)}` : ""}
-              </div>
-            </div>
+        </div>
+        <div className="stat">
+          <div className="stat-label">เปลี่ยนแปลงรวม</div>
+          <div className="stat-value" style={{ color: totalMove == null ? undefined : totalMove > 0 ? "var(--amber)" : totalMove < 0 ? "var(--green)" : undefined }}>
+            {totalMove != null ? `${totalMove > 0 ? "+" : ""}${totalMove.toFixed(1)}%` : "—"}
           </div>
-
-          {/* Chart */}
-          <div className="card" style={{ marginBottom: 20 }}>
-            <div className="card-head">
-              <h3>กราฟราคาตามเวลา · Price Trend</h3>
-              <span className="more">{history.length} จุดข้อมูล</span>
-            </div>
-            <div className="chart-wrap">
-              {chartData.length >= 2
-                ? <LineChart data={chartData} height={280} formatY={v => "฿" + v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} formatX={fmtChartDate} />
-                : <div className="empty">ต้องมีข้อมูลอย่างน้อย 2 จุดเพื่อแสดงกราฟ</div>}
-            </div>
+          <div className="dim" style={{ fontSize: 11, marginTop: 4 }}>
+            {firstPrice != null ? `${M.thb(firstPrice)} → ${M.thb(latestPrice)}` : ""}
           </div>
+        </div>
+        <div className="stat">
+          <div className="stat-label">ราคาต่ำสุด / สูงสุด</div>
+          <div className="stat-value" style={{ fontSize: 18 }}>{minPrice != null ? M.thb(minPrice) : "—"}</div>
+          <div className="dim" style={{ fontSize: 11, marginTop: 4 }}>สูงสุด {maxPrice != null ? M.thb(maxPrice) : "—"}</div>
+        </div>
+        <div className="stat">
+          <div className="stat-label">จำนวนครั้งที่ขาย</div>
+          <div className="stat-value">{M.num(history.length)}</div>
+          <div className="dim" style={{ fontSize: 11, marginTop: 4 }}>
+            {history.length > 0 ? `${M.fmtDate(history[0].date)} – ${M.fmtDate(history[history.length - 1].date)}` : ""}
+          </div>
+        </div>
+      </div>
 
-          {/* History Table */}
-          <div className="card">
-            <div className="card-head">
-              <h3>ประวัติราคาขายทั้งหมด</h3>
-              <span className="more">{history.length} รายการ</span>
-            </div>
-            {history.length === 0
-              ? <div className="empty">ยังไม่มีประวัติราคา</div>
-              : (
-                <div className="tbl-scroll">
-                  <table className="tbl">
-                    <thead>
-                      <tr>
-                        <th>วันที่</th>
-                        <th>เลขเอกสาร</th>
-                        <th>รหัสลูกค้า</th>
-                        <th>ชื่อบริษัท</th>
-                        <th className="num">ราคา</th>
-                        <th className="num">เปลี่ยน</th>
+      {/* Chart */}
+      <div className="card" style={{ marginBottom: 20 }}>
+        <div className="card-head">
+          <h3>กราฟราคาตามเวลา · Price Trend</h3>
+          <span className="more">{history.length} จุดข้อมูล</span>
+        </div>
+        <div className="chart-wrap">
+          {chartData.length >= 2
+            ? <LineChart data={chartData} height={280} formatY={v => "฿" + v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} formatX={fmtChartDate} />
+            : <div className="empty">ต้องมีข้อมูลอย่างน้อย 2 จุดเพื่อแสดงกราฟ</div>}
+        </div>
+      </div>
+
+      {/* History Table */}
+      <div className="card">
+        <div className="card-head">
+          <h3>ประวัติราคาขายทั้งหมด</h3>
+          <span className="more">{history.length} รายการ</span>
+        </div>
+        {history.length === 0
+          ? <div className="empty">ยังไม่มีประวัติราคา</div>
+          : (
+            <div className="tbl-scroll">
+              <table className="tbl">
+                <thead>
+                  <tr>
+                    <th>วันที่</th>
+                    <th>เลขเอกสาร</th>
+                    <th>รหัสลูกค้า</th>
+                    <th>ชื่อบริษัท</th>
+                    <th className="num">ราคา</th>
+                    <th className="num">เปลี่ยน</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[...history].reverse().map((h, i, arr) => {
+                    const prev = arr[i + 1]
+                    const diff = prev ? ((h.price - prev.price) / prev.price) * 100 : null
+                    const cust = M.customerOf(h.customer)
+                    return (
+                      <tr key={i} onClick={() => h.doc && setRoute("orders:" + h.doc)}>
+                        <td>{M.fmtDate(h.date)}</td>
+                        <td className="code">{h.doc || "—"}</td>
+                        <td className="code dim">{h.customer}</td>
+                        <td style={{ maxWidth: 260, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {cust?.name || <span className="dim">—</span>}
+                        </td>
+                        <td className="num mono"><strong>{M.thb(h.price)}</strong></td>
+                        <td className="num">
+                          {diff != null && Math.abs(diff) > 0.01
+                            ? <span className={"badge " + (diff > 0 ? "amber" : "green")}>{diff > 0 ? "+" : ""}{diff.toFixed(1)}%</span>
+                            : diff === null
+                              ? <span className="dim" style={{ fontSize: 11 }}>เริ่มต้น</span>
+                              : <span className="dim">—</span>}
+                        </td>
                       </tr>
-                    </thead>
-                    <tbody>
-                      {[...history].reverse().map((h, i, arr) => {
-                        const prev = arr[i + 1]
-                        const diff = prev ? ((h.price - prev.price) / prev.price) * 100 : null
-                        const cust = M.customerOf(h.customer)
-                        return (
-                          <tr key={i} onClick={() => h.doc && setRoute("orders:" + h.doc)}>
-                            <td>{M.fmtDate(h.date)}</td>
-                            <td className="code">{h.doc || "—"}</td>
-                            <td className="code dim">{h.customer}</td>
-                            <td style={{ maxWidth: 260, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                              {cust?.name || <span className="dim">—</span>}
-                            </td>
-                            <td className="num mono"><strong>{M.thb(h.price)}</strong></td>
-                            <td className="num">
-                              {diff != null && Math.abs(diff) > 0.01
-                                ? <span className={"badge " + (diff > 0 ? "amber" : "green")}>{diff > 0 ? "+" : ""}{diff.toFixed(1)}%</span>
-                                : diff === null
-                                  ? <span className="dim" style={{ fontSize: 11 }}>เริ่มต้น</span>
-                                  : <span className="dim">—</span>}
-                            </td>
-                          </tr>
-                        )
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-          </div>
-        </>
-      )}
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+      </div>
+    </>
+  )
+}
 
-      {/* Empty state */}
-      {skusWithHistory.length === 0 && (
+function PriceHistoryPage({ initialSku, setRoute }) {
+  const M = MOCK
+  const skusWithHistory = React.useMemo(() => M.skusWithPriceHistory(), [M.orders])
+  const [selected, setSelected] = React.useState(
+    initialSku && skusWithHistory.includes(initialSku) ? initialSku : null
+  )
+  const [q, setQ] = React.useState("")
+
+  if (skusWithHistory.length === 0) {
+    return (
+      <div className="page">
+        <div className="page-head">
+          <h1 className="page-title">ประวัติราคา · Price History</h1>
+        </div>
         <div className="card"><div className="empty">ยังไม่มีข้อมูลประวัติราคา</div></div>
-      )}
+      </div>
+    )
+  }
+
+  return (
+    <div className="page">
+      <div className="page-head">
+        <div>
+          <h1 className="page-title">ประวัติราคา · Price History</h1>
+          <p className="page-sub">
+            {selected
+              ? "เลือก SKU อื่น กด กลับ"
+              : `${skusWithHistory.length} SKU · ติดตามราคาขายจริงจากออเดอร์ทั้งหมด`}
+          </p>
+        </div>
+      </div>
+
+      {selected
+        ? <SkuDetail
+            sku={selected}
+            setRoute={setRoute}
+            onBack={() => { setSelected(null); setQ("") }}
+          />
+        : <SkuBrowser
+            skusWithHistory={skusWithHistory}
+            selected={selected}
+            q={q}
+            setQ={setQ}
+            onSelect={sku => { setSelected(sku); setQ("") }}
+          />
+      }
     </div>
   )
 }
