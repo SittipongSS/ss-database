@@ -129,9 +129,9 @@ function CustomerDetail({ id, setRoute, goBack, canGoBack }) {
   const c = M.customerOf(id)
   const [tab, setTab] = React.useState("info")
   const [ordPage, setOrdPage] = React.useState(1)
-  const [ordSize, setOrdSize] = React.useState(25)
+  const [ordSize, setOrdSize] = React.useState(10)
   const [skuPage, setSkuPage] = React.useState(1)
-  const [skuSize, setSkuSize] = React.useState(25)
+  const [skuSize, setSkuSize] = React.useState(10)
   if (!c) return <div className="page"><div className="empty">ไม่พบลูกค้ารหัส {id}</div></div>
 
   const orders = M.ordersOf(id)

@@ -167,11 +167,11 @@ function ProductDetail({ sku, setRoute, goBack, canGoBack }) {
   const p = M.productOf(sku)
   const [tab, setTab] = React.useState("info")
   const [pricePage, setPricePage] = React.useState(1)
-  const [priceSize, setPriceSize] = React.useState(25)
+  const [priceSize, setPriceSize] = React.useState(10)
   const [ordPage, setOrdPage] = React.useState(1)
-  const [ordSize, setOrdSize] = React.useState(25)
+  const [ordSize, setOrdSize] = React.useState(10)
   const [custPage, setCustPage] = React.useState(1)
-  const [custSize, setCustSize] = React.useState(25)
+  const [custSize, setCustSize] = React.useState(10)
 
   if (!p) return <div className="page"><div className="empty">ไม่พบสินค้ารหัส {sku}</div></div>
 

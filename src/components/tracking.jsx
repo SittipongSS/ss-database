@@ -94,7 +94,7 @@ function SkuDetail({ sku, setRoute, onBack }) {
   const history  = M.priceHistoryOf(sku)
   const chartData = history.map(h => ({ x: h.date, y: h.price, raw: h }))
   const [histPage, setHistPage] = React.useState(1)
-  const [histSize, setHistSize] = React.useState(25)
+  const [histSize, setHistSize] = React.useState(10)
 
   const latestPrice = history.length ? history[history.length - 1].price : null
   const minPrice    = history.length ? Math.min(...history.map(h => h.price)) : null
