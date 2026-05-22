@@ -85,9 +85,9 @@ html, body {
   color: var(--text);
   font-family: var(--font-sans);
   font-size: 14px;
-  line-height: 1.45;
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
-  letter-spacing: -0.005em;
+  letter-spacing: 0;
 }
 
 button { font-family: inherit; }
@@ -135,7 +135,7 @@ button { font-family: inherit; }
   flex-shrink: 0;
   letter-spacing: 0.02em;
 }
-.brand-name { font-weight: 600; font-size: 14px; letter-spacing: -0.01em; white-space: nowrap; }
+.brand-name { font-weight: 600; font-size: 14px; letter-spacing: 0; white-space: nowrap; }
 .brand-sub { font-size: 11px; color: var(--text-3); white-space: nowrap; }
 
 .sidebar-toggle {
@@ -220,7 +220,7 @@ button { font-family: inherit; }
 .page { padding: 24px 28px 64px; max-width: 1480px; width: 100%; }
 [data-density="compact"] .page { padding: 16px 20px 48px; }
 .page-head { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 20px; gap: 16px; flex-wrap: wrap; }
-.page-title { font-size: 22px; font-weight: 600; margin: 0; letter-spacing: -0.018em; }
+.page-title { font-size: 22px; font-weight: 600; margin: 0; letter-spacing: 0; }
 .page-sub { color: var(--text-2); font-size: 13px; margin: 4px 0 0; }
 
 /* Buttons */
@@ -245,7 +245,7 @@ button { font-family: inherit; }
 .card { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
 .card-pad { padding: 18px; }
 .card-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid var(--border); }
-.card-head h3 { margin: 0; font-size: 14px; font-weight: 600; letter-spacing: -0.005em; min-width: 0; flex-shrink: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.card-head h3 { margin: 0; font-size: 14px; font-weight: 600; letter-spacing: 0; min-width: 0; flex-shrink: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .card-head .more { color: var(--text-3); font-size: 12px; flex-shrink: 0; white-space: nowrap; }
 
 /* Period chips */
@@ -284,7 +284,7 @@ button { font-family: inherit; }
 /* KPI / Stat */
 .stat { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px 18px; }
 .stat-label { color: var(--text-2); font-size: 12px; display: flex; align-items: center; gap: 6px; margin-bottom: 8px; font-weight: 500; }
-.stat-value { font-size: 24px; font-weight: 600; letter-spacing: -0.022em; font-variant-numeric: tabular-nums; }
+.stat-value { font-size: 24px; font-weight: 600; letter-spacing: 0; font-variant-numeric: tabular-nums; }
 .stat-delta { margin-top: 6px; font-size: 12px; display: inline-flex; align-items: center; gap: 4px; font-variant-numeric: tabular-nums; }
 .stat-delta.up { color: var(--green); }
 .stat-delta.down { color: var(--red); }
@@ -357,7 +357,7 @@ button { font-family: inherit; }
 .page-rail { display: flex; flex-direction: column; gap: 8px; position: sticky; top: 12px; }
 .rail-stat { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 12px; box-shadow: var(--shadow-sm); }
 .rail-stat .stat-label { color: var(--text-2); font-size: 11px; margin-bottom: 2px; text-transform: none; letter-spacing: 0; }
-.rail-stat .stat-value { font-size: 17px; font-weight: 600; letter-spacing: -0.015em; font-variant-numeric: tabular-nums; }
+.rail-stat .stat-value { font-size: 17px; font-weight: 600; letter-spacing: 0; font-variant-numeric: tabular-nums; }
 @media (max-width: 1100px) { .page-with-rail { grid-template-columns: 1fr; } .page-rail { position: static; } }
 
 .price-history-grid { grid-template-columns: 320px minmax(0, 1fr); gap: 16px; }
@@ -366,7 +366,7 @@ button { font-family: inherit; }
 
 .detail-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding-bottom: 18px; margin-bottom: 18px; border-bottom: 1px solid var(--border); }
 .detail-kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; flex-shrink: 0; min-width: 260px; }
-.detail-title { font-size: 22px; font-weight: 600; margin: 0; letter-spacing: -0.018em; }
+.detail-title { font-size: 22px; font-weight: 600; margin: 0; letter-spacing: 0; }
 .detail-code { font-family: var(--font-mono); font-size: 12px; color: var(--text-3); }
 
 .kv-list { display: grid; grid-template-columns: 140px minmax(0, 1fr); gap: 10px 16px; font-size: 13px; }
@@ -392,7 +392,7 @@ button { font-family: inherit; }
 /* Invoice */
 .invoice { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 36px 40px; max-width: 880px; margin: 0 auto; overflow: hidden; }
 .invoice-head { display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 24px; margin-bottom: 24px; gap: 16px; }
-.invoice h1 { margin: 0 0 4px; font-size: 26px; letter-spacing: -0.02em; }
+.invoice h1 { margin: 0 0 4px; font-size: 26px; letter-spacing: 0; }
 .invoice-meta { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; margin-bottom: 32px; }
 .invoice-tbl-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 .invoice-totals { width: 320px; max-width: 100%; }
