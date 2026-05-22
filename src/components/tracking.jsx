@@ -29,11 +29,10 @@ function SkuBrowser({ skusWithHistory, selected, q, setQ, onSelect }) {
           <div className="search-bar mobile-show" style={{ margin: 0, maxWidth: "100%" }}>
             <Icon name="search" className="icon-l" />
             <input
-              autoFocus
               value={q}
               onChange={e => setQ(e.target.value)}
               placeholder="ค้นหา SKU · ชื่อสินค้า · หมวด…"
-              style={{ height: 38 }}
+              style={{ height: 38, fontSize: 16 }}
             />
           </div>
         </div>
