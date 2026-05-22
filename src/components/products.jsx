@@ -214,8 +214,7 @@ function ProductDetail({ sku, setRoute, goBack, canGoBack }) {
           )}
           <div className="detail-code" style={{ marginTop: 8 }}>SKU · {p.sku}</div>
         </div>
-        <div style={{ display: "flex", gap: 12, alignItems: "stretch", flexWrap: "wrap" }}>
-          <div className="detail-kpi-grid">
+        <div className="detail-kpi-grid">
             <div className="rail-stat">
               <div className="stat-label">ราคาขายปัจจุบัน</div>
               <div className="stat-value">{latestPrice ? M.thb(latestPrice) : "—"}</div>
@@ -240,19 +239,6 @@ function ProductDetail({ sku, setRoute, goBack, canGoBack }) {
               <div className="dim" style={{ fontSize: 11, marginTop: 4 }}>{ordersOfSku[0]?.date ? `สั่งล่าสุด ${M.fmtDate(ordersOfSku[0].date)}` : "—"}</div>
             </div>
           </div>
-
-          {chartData.length >= 2 && (
-            <div className="card" style={{ flex: "1 1 220px", minWidth: 0, display: "flex", flexDirection: "column" }}>
-              <div className="card-head" style={{ padding: "10px 14px 0", flexShrink: 0 }}>
-                <h3 style={{ fontSize: 12 }}>ประวัติราคา · Price Timeline</h3>
-                <span className="more" style={{ cursor: "pointer", fontSize: 11 }} onClick={() => setTab("price")}>ดูทั้งหมด</span>
-              </div>
-              <div className="chart-wrap" style={{ flex: 1, padding: "4px", minHeight: 0 }}>
-                <LineChart data={chartData} height="100%" compact formatY={v => "฿" + v.toFixed(v >= 100 ? 0 : 2)} formatX={fmtChartDate} />
-              </div>
-            </div>
-          )}
-        </div>
       </div>
 
       <div>
