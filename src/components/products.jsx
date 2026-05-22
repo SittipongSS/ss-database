@@ -214,30 +214,44 @@ function ProductDetail({ sku, setRoute, goBack, canGoBack }) {
           )}
           <div className="detail-code" style={{ marginTop: 8 }}>SKU · {p.sku}</div>
         </div>
-        <div className="detail-kpi-grid">
-          <div className="rail-stat">
-            <div className="stat-label">ราคาขายปัจจุบัน</div>
-            <div className="stat-value">{latestPrice ? M.thb(latestPrice) : "—"}</div>
-            <div className="dim" style={{ fontSize: 11, marginTop: 4 }}>
-              {p.uom ? `ต่อ ${p.uom}` : "—"}
-              {latestPriceDate && <> · {M.fmtDate(latestPriceDate)}</>}
+        <div style={{ display: "flex", gap: 12, alignItems: "flex-start", flexWrap: "wrap" }}>
+          <div className="detail-kpi-grid">
+            <div className="rail-stat">
+              <div className="stat-label">ราคาขายปัจจุบัน</div>
+              <div className="stat-value">{latestPrice ? M.thb(latestPrice) : "—"}</div>
+              <div className="dim" style={{ fontSize: 11, marginTop: 4 }}>
+                {p.uom ? `ต่อ ${p.uom}` : "—"}
+                {latestPriceDate && <> · {M.fmtDate(latestPriceDate)}</>}
+              </div>
+            </div>
+            <div className="rail-stat">
+              <div className="stat-label">ช่วงราคาในประวัติ</div>
+              <div className="stat-value" style={{ fontSize: 14 }}>{history.length ? `${M.thb(minPrice)} – ${M.thb(maxPrice)}` : "—"}</div>
+              <div className="dim" style={{ fontSize: 11, marginTop: 4 }}>{history.length ? `เฉลี่ย ${M.thb(avgPrice)} · ${history.length} ครั้ง` : "—"}</div>
+            </div>
+            <div className="rail-stat">
+              <div className="stat-label">ขายรวม (ตลอดประวัติ)</div>
+              <div className="stat-value">{totalSold ? M.num(totalSold) : "—"}<span style={{ fontSize: 12, fontWeight: 400, marginLeft: 4, color: "var(--text-2)" }}>{p.uom || ""}</span></div>
+              <div className="dim" style={{ fontSize: 11, marginTop: 4 }}>{ordersOfSku.length} ออเดอร์</div>
+            </div>
+            <div className="rail-stat">
+              <div className="stat-label">รายได้รวม</div>
+              <div className="stat-value">{totalRev ? M.thb(totalRev) : "—"}</div>
+              <div className="dim" style={{ fontSize: 11, marginTop: 4 }}>{ordersOfSku[0]?.date ? `สั่งล่าสุด ${M.fmtDate(ordersOfSku[0].date)}` : "—"}</div>
             </div>
           </div>
-          <div className="rail-stat">
-            <div className="stat-label">ช่วงราคาในประวัติ</div>
-            <div className="stat-value" style={{ fontSize: 14 }}>{history.length ? `${M.thb(minPrice)} – ${M.thb(maxPrice)}` : "—"}</div>
-            <div className="dim" style={{ fontSize: 11, marginTop: 4 }}>{history.length ? `เฉลี่ย ${M.thb(avgPrice)} · ${history.length} ครั้ง` : "—"}</div>
-          </div>
-          <div className="rail-stat">
-            <div className="stat-label">ขายรวม (ตลอดประวัติ)</div>
-            <div className="stat-value">{totalSold ? M.num(totalSold) : "—"}<span style={{ fontSize: 12, fontWeight: 400, marginLeft: 4, color: "var(--text-2)" }}>{p.uom || ""}</span></div>
-            <div className="dim" style={{ fontSize: 11, marginTop: 4 }}>{ordersOfSku.length} ออเดอร์</div>
-          </div>
-          <div className="rail-stat">
-            <div className="stat-label">รายได้รวม</div>
-            <div className="stat-value">{totalRev ? M.thb(totalRev) : "—"}</div>
-            <div className="dim" style={{ fontSize: 11, marginTop: 4 }}>{ordersOfSku[0]?.date ? `สั่งล่าสุด ${M.fmtDate(ordersOfSku[0].date)}` : "—"}</div>
-          </div>
+
+          {chartData.length >= 2 && (
+            <div className="card" style={{ flex: "1 1 220px", minWidth: 0 }}>
+              <div className="card-head" style={{ padding: "10px 14px 0" }}>
+                <h3 style={{ fontSize: 12 }}>ประวัติราคา · Price Timeline</h3>
+                <span className="more" style={{ cursor: "pointer", fontSize: 11 }} onClick={() => setTab("price")}>ดูทั้งหมด</span>
+              </div>
+              <div className="chart-wrap" style={{ padding: "4px 4px 8px" }}>
+                <LineChart data={chartData} height={120} formatY={v => "฿" + v.toFixed(v >= 100 ? 0 : 2)} formatX={fmtChartDate} />
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -271,17 +285,6 @@ function ProductDetail({ sku, setRoute, goBack, canGoBack }) {
                 </dl>
               </div>
 
-              {chartData.length >= 2 && (
-                <div className="card">
-                  <div className="card-head">
-                    <h3>ประวัติราคา · Price Timeline</h3>
-                    <span className="more" style={{ cursor: "pointer" }} onClick={() => setTab("price")}>ดูทั้งหมด</span>
-                  </div>
-                  <div className="chart-wrap">
-                    <LineChart data={chartData} height={200} formatY={v => "฿" + v.toFixed(v >= 100 ? 0 : 2)} formatX={fmtChartDate} />
-                  </div>
-                </div>
-              )}
             </>
           )}
 
