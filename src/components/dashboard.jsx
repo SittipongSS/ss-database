@@ -120,7 +120,7 @@ function AlertCard({ count, label, sub, tone, icon }) {
 function OrdersKpiCard() {
   const M = MOCK
   const [period, setPeriod] = React.useState("all")
-  const filtered = React.useMemo(() => filterOrdersByPeriod(M.orders, period, M.today), [period])
+  const filtered = React.useMemo(() => filterOrdersByPeriod(M.orders, period, M.today), [period, M.orders])
   const count = filtered.length
   const total = filtered.reduce((s, o) => s + M.orderTotal(o), 0)
   const avg = count ? total / count : 0
@@ -142,7 +142,7 @@ function OrdersKpiCard() {
 function SalesKpiCard() {
   const M = MOCK
   const [period, setPeriod] = React.useState("month")
-  const filtered = React.useMemo(() => filterOrdersByPeriod(M.orders, period, M.today), [period])
+  const filtered = React.useMemo(() => filterOrdersByPeriod(M.orders, period, M.today), [period, M.orders])
   const total = filtered.reduce((s, o) => s + M.orderTotal(o), 0)
   const count = filtered.length
   return (
@@ -260,7 +260,7 @@ function TopProductsByRevenueCard({ setRoute }) {
       .map(([sku, total]) => ({ sku, total, product: M.productOf(sku) }))
       .sort((a, b) => b.total - a.total)
       .slice(0, 5)
-  }, [period])
+  }, [period, M.orders])
   const max = items[0]?.total || 1
   return (
     <div className="card">
@@ -294,7 +294,7 @@ function TopProductsByRevenueCard({ setRoute }) {
 function OrdersTrendChart() {
   const M = MOCK
   const [period, setPeriod] = React.useState("month")
-  const buckets = React.useMemo(() => bucketOrdersByPeriod(M.orders, period, M.today), [period])
+  const buckets = React.useMemo(() => bucketOrdersByPeriod(M.orders, period, M.today), [period, M.orders])
   const total = buckets.reduce((s, b) => s + b.y, 0)
   return (
     <div className="card" style={{ marginBottom: 20 }}>
@@ -324,7 +324,7 @@ function TopCategoriesCard({ setRoute }) {
       totals[cat] = (totals[cat] || 0) + (it.total || it.qty * it.price || 0)
     }
     return Object.entries(totals).map(([cat, total]) => ({ cat, total })).sort((a, b) => b.total - a.total).slice(0, 5)
-  }, [period])
+  }, [period, M.orders])
   const max = items[0]?.total || 1
   return (
     <div className="card">
@@ -362,7 +362,7 @@ function TopCustomersCard({ setRoute }) {
     const totals = {}
     for (const o of src) totals[o.customer] = (totals[o.customer] || 0) + M.orderTotal(o)
     return Object.entries(totals).map(([id, total]) => ({ id, total, customer: M.customerOf(id) })).sort((a, b) => b.total - a.total).slice(0, 5)
-  }, [period])
+  }, [period, M.orders])
   const max = items[0]?.total || 1
   return (
     <div className="card">

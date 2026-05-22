@@ -26,7 +26,7 @@ function SkuBrowser({ skusWithHistory, selected, q, setQ, onSelect }) {
     <>
       <div className="card" style={{ marginBottom: 0 }}>
         <div style={{ padding: "12px 16px", borderBottom: "1px solid var(--border)" }}>
-          <div className="search-bar" style={{ margin: 0, maxWidth: "100%" }}>
+          <div className="search-bar mobile-show" style={{ margin: 0, maxWidth: "100%" }}>
             <Icon name="search" className="icon-l" />
             <input
               autoFocus
