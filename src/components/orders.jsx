@@ -255,7 +255,7 @@ function InvoiceDetail({ doc, setRoute, goBack, canGoBack }) {
                 <tr key={i} onClick={() => setRoute("products:" + it.sku)}>
                   <td className="dim">{i + 1}</td>
                   <td className="code">{it.sku}</td>
-                  <td>{p?.name || it.desc || p?.formula || it.sku}</td>
+                  <td>{p?.name || it.desc || it.sku}</td>
                   <td className="num">{M.num(it.qty)}</td>
                   <td className="dim">{p?.uom}</td>
                   <td className="num mono">{M.thbDec(it.price)}</td>
