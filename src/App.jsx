@@ -17,6 +17,17 @@ const TWEAK_DEFAULTS = {
 
 const SHEETS_URL = import.meta.env.VITE_SHEETS_URL
 
+// Bump this when the API schema changes to clear stale localStorage cache
+const CACHE_VERSION = 'v2'
+;(() => {
+  try {
+    if (localStorage.getItem('ss_cache_ver') !== CACHE_VERSION) {
+      ['ss_customers', 'ss_products', 'ss_orders', 'ss_data'].forEach(k => localStorage.removeItem(k))
+      localStorage.setItem('ss_cache_ver', CACHE_VERSION)
+    }
+  } catch(e) {}
+})()
+
 function App() {
   const [history, setHistory] = useState(["dashboard"])
   const route = history[history.length - 1]
