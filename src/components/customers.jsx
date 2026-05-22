@@ -282,7 +282,7 @@ function CustomerDetail({ id, setRoute, goBack, canGoBack }) {
                           <div style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{M.productDisplayName(s.sku)}</div>
                           {p?.formula && p.formula !== p.name && <div className="dim" style={{ fontSize: 11, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>สูตร: {p.formula}</div>}
                         </td>
-                        <td>{p?.category ? <span className="badge">{p.category}</span> : <span className="dim">—</span>}</td>
+                        <td>{p?.category ? <span className="badge">{M.categoryLabel(s.sku, p.category)}</span> : <span className="dim">—</span>}</td>
                         <td className="num">{p?.price ? <><strong>{M.thb(p.price)}</strong> <span className="dim mono" style={{ fontSize: 11 }}>/ {p.uom}</span></> : <span className="dim">—</span>}</td>
                       </tr>
                     )

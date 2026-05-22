@@ -61,6 +61,12 @@ const MOCK = (() => {
     const m = String(sku || "").match(/^FG-[^-]+-(\d{2})-/);
     return m ? m[1] : null;
   }
+  function categoryLabel(sku, category) {
+    if (!category) return null;
+    const code = mainOf(sku);
+    const main = code ? (mainNames?.[code] || null) : null;
+    return main ? `${main} / ${category}` : category;
+  }
   function ordersBySku(sku) {
     return orders.filter(o => o.items.some(i => i.sku === sku))
       .map(o => ({ ...o, items: o.items.filter(i => i.sku === sku) }));
@@ -159,7 +165,7 @@ const MOCK = (() => {
     get monthly()   { return monthly;   },
     get categories(){ return categories;},
     get mainNames() { return mainNames; },
-    productOf, customerOf, orderOf, orderTotal, orderQty, ordersOf, mainOf, ordersBySku,
+    productOf, customerOf, orderOf, orderTotal, orderQty, ordersOf, mainOf, ordersBySku, categoryLabel,
     productDisplayName,
     thb, thbDec, num, dayDiff, lastOrderDate, customerLifetimeValue,
     fmtDate,

@@ -140,7 +140,7 @@ function ProductsList({ setRoute }) {
                     <div style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{displayName}</div>
                     {showFormula && <div className="dim" style={{ fontSize: 11, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>สูตร: {p.formula}</div>}
                   </td>
-                  <td>{p.category ? <span className="badge">{p.category}</span> : <span className="dim">—</span>}</td>
+                  <td>{p.category ? <span className="badge">{M.categoryLabel(p.sku, p.category)}</span> : <span className="dim">—</span>}</td>
                   <td className="num">
                     {latestPrice ? <><strong>{M.thb(latestPrice)}</strong> <span className="dim mono" style={{ fontSize: 11 }}>/ {p.uom}</span></> : <span className="dim">—</span>}
                   </td>
@@ -205,7 +205,7 @@ function ProductDetail({ sku, setRoute, goBack, canGoBack }) {
       <div className="detail-head">
         <div style={{ flex: 1, minWidth: 0 }}>
           <div className="row" style={{ gap: 10, marginBottom: 6 }}>
-            {p.category && <span className="badge">{p.category}</span>}
+            {p.category && <span className="badge">{M.categoryLabel(p.sku, p.category)}</span>}
             {!latestPrice && <span className="badge red"><span className="dot" />ยังไม่มีราคา</span>}
           </div>
           <h1 className="detail-title">{M.productDisplayName(p.sku)}</h1>
@@ -258,13 +258,7 @@ function ProductDetail({ sku, setRoute, goBack, canGoBack }) {
                   {p.name && p.name !== p.formula && <><dt>ชื่อสินค้า</dt><dd style={{ wordBreak: "break-word" }}>{p.name}</dd></>}
                   {p.formula && <><dt>ชื่อสูตร</dt><dd style={{ wordBreak: "break-word" }}>{p.formula}</dd></>}
                   {p.category && <><dt>หมวดสินค้า</dt><dd>
-                    {(() => {
-                      const code = M.mainOf(p.sku)
-                      const mainName = code ? (M.mainNames?.[code] || code) : null
-                      return (
-                        <span className="badge">{mainName ? `${mainName} / ${p.category}` : p.category}</span>
-                      )
-                    })()}
+                    <span className="badge">{M.categoryLabel(p.sku, p.category)}</span>
                   </dd></>}
                   <dt>ราคาขาย</dt><dd className="mono">
                     {latestPrice
