@@ -298,7 +298,7 @@ function TopProductsByRevenueCard({ setRoute }) {
 
 function OrdersTrendChart() {
   const M = MOCK
-  const [period, setPeriod] = React.useState("year")
+  const [period, setPeriod] = React.useState("all")
   const buckets = React.useMemo(() => bucketOrdersByPeriod(M.orders, period, M.today), [period, M.orders])
   const total = buckets.reduce((s, b) => s + b.y, 0)
   return (
@@ -487,9 +487,13 @@ function DashV2(props) {
 }
 
 function DashV3(props) {
-  const { M, lastMonth, lastMonthLabel, prevMonth, priceChanges, inactive, recentOrders, setRoute } = props
+  const { M, setRoute } = props
   const pending = M.orders.filter(o => o.status === "pending").length
   const shipped = M.orders.filter(o => o.status === "shipped").length
+  const attention = M.orders.filter(o => o.status === "pending" || o.status === "shipped")
+  const recentAll = M.orders.slice().sort((a, b) => b.date.localeCompare(a.date)).slice(0, 12)
+  const tableRows = attention.length > 0 ? attention.slice(0, 12) : recentAll
+  const tableLabel = attention.length > 0 ? "Pending / Ready to Ship" : "ล่าสุด"
   return (
     <>
       <div className="kpi-row">
@@ -501,21 +505,24 @@ function DashV3(props) {
       <div className="card">
         <div className="card-head">
           <h3>ออเดอร์ที่ต้องดู · Needs Attention</h3>
-          <span className="more">Pending / Ready to Ship</span>
+          <span className="more">{tableLabel}</span>
         </div>
         <div className="tbl-scroll">
         <table className="tbl">
           <thead><tr><th>เลขเอกสาร</th><th>ลูกค้า</th><th>วันที่</th><th className="num">ยอดรวม</th><th>สถานะ</th></tr></thead>
           <tbody>
-            {M.orders.filter(o => o.status === "pending" || o.status === "shipped").slice(0, 12).map(o => (
-              <tr key={o.doc + o.customer} onClick={() => setRoute("orders:" + o.doc)}>
-                <td className="code">{o.doc}</td>
-                <td>{M.customerOf(o.customer)?.name || o.customerName}</td>
-                <td>{M.fmtDate(o.date)}</td>
-                <td className="num"><strong>{M.thb(M.orderTotal(o))}</strong></td>
-                <td><StatusBadge status={o.status} /></td>
-              </tr>
-            ))}
+            {tableRows.length === 0
+              ? <tr><td colSpan={5}><div className="empty">ไม่มีข้อมูลคำสั่งซื้อ</div></td></tr>
+              : tableRows.map(o => (
+                <tr key={o.doc + o.customer} onClick={() => setRoute("orders:" + o.doc)}>
+                  <td className="code">{o.doc}</td>
+                  <td>{M.customerOf(o.customer)?.name || o.customerName}</td>
+                  <td>{M.fmtDate(o.date)}</td>
+                  <td className="num"><strong>{M.thb(M.orderTotal(o))}</strong></td>
+                  <td><StatusBadge status={o.status} /></td>
+                </tr>
+              ))
+            }
           </tbody>
         </table>
         </div>
