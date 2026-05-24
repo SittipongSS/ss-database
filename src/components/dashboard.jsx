@@ -30,15 +30,17 @@ function periodLabel(period, today) {
 }
 
 function filterOrdersByPeriod(orders, period, today) {
-  if (period === "all") return orders
-  if (period === "day") return orders.filter(o => o.date === today)
-  if (period === "week") { const from = shiftIsoDate(today, 6); return orders.filter(o => o.date >= from && o.date <= today) }
-  if (period === "month") { const from = shiftIsoDate(today, 29); return orders.filter(o => o.date >= from && o.date <= today) }
-  if (period === "year") { const from = shiftIsoDate(today, 364); return orders.filter(o => o.date >= from && o.date <= today) }
-  return orders
+  const valid = orders.filter(o => o.date)
+  if (period === "all") return valid
+  if (period === "day") return valid.filter(o => o.date === today)
+  if (period === "week") { const from = shiftIsoDate(today, 6); return valid.filter(o => o.date >= from && o.date <= today) }
+  if (period === "month") { const from = shiftIsoDate(today, 29); return valid.filter(o => o.date >= from && o.date <= today) }
+  if (period === "year") { const from = shiftIsoDate(today, 364); return valid.filter(o => o.date >= from && o.date <= today) }
+  return valid
 }
 
-function bucketOrdersByPeriod(orders, period, today) {
+function bucketOrdersByPeriod(rawOrders, period, today) {
+  const orders = rawOrders.filter(o => o.date)
   const t = new Date(today)
   const months = TH_MONTHS
   if (period === "day") {
@@ -491,7 +493,7 @@ function DashV3(props) {
   const pending = M.orders.filter(o => o.status === "pending").length
   const shipped = M.orders.filter(o => o.status === "shipped").length
   const attention = M.orders.filter(o => o.status === "pending" || o.status === "shipped")
-  const recentAll = M.orders.slice().sort((a, b) => b.date.localeCompare(a.date)).slice(0, 12)
+  const recentAll = M.orders.filter(o => o.date).sort((a, b) => b.date.localeCompare(a.date)).slice(0, 12)
   const tableRows = attention.length > 0 ? attention.slice(0, 12) : recentAll
   const tableLabel = attention.length > 0 ? "Pending / Ready to Ship" : "ล่าสุด"
   return (
