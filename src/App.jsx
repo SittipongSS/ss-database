@@ -18,7 +18,7 @@ const TWEAK_DEFAULTS = {
 const SHEETS_URL = import.meta.env.VITE_SHEETS_URL
 
 // Bump this when the API schema changes to clear stale localStorage cache
-const CACHE_VERSION = 'v3'
+const CACHE_VERSION = 'v4'
 ;(() => {
   try {
     if (localStorage.getItem('ss_cache_ver') !== CACHE_VERSION) {
@@ -57,7 +57,7 @@ function App() {
     forceUpdate(v => v + 1)
   }, [])
 
-  // Fetch all sheets in one call: show cache instantly, then refresh from API
+  // Fetch sheets: try ?sheet=all first, fall back to 3 parallel calls
   const fetchSheet = useCallback(async () => {
     try {
       const cached = localStorage.getItem('ss_all')
@@ -66,9 +66,29 @@ function App() {
     try {
       const r = await fetch('/api/sheets?sheet=all')
       const data = await r.json()
-      if (data && !data.error) {
+      // If GAS returns all keys, use it directly
+      if (data && !data.error && data.customers && data.orders && data.products) {
         reloadMock(data)
         try { localStorage.setItem('ss_all', JSON.stringify(data)) } catch(e) {}
+        return
+      }
+    } catch(e) {}
+    // Fallback: 3 parallel calls (works with old GAS that doesn't support ?sheet=all)
+    try {
+      const [cRes, pRes, oRes] = await Promise.all([
+        fetch('/api/sheets?sheet=customers'),
+        fetch('/api/sheets?sheet=products'),
+        fetch('/api/sheets?sheet=orders'),
+      ])
+      const [cData, pData, oData] = await Promise.all([cRes.json(), pRes.json(), oRes.json()])
+      const merged = {
+        ...cData,
+        ...pData,
+        ...oData,
+      }
+      if (merged.customers || merged.orders || merged.products) {
+        reloadMock(merged)
+        try { localStorage.setItem('ss_all', JSON.stringify(merged)) } catch(e) {}
       }
     } catch(e) { console.error('[sheets] fetch failed', e) }
   }, [reloadMock])
